@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ProfileController;
 
-
-Route::middleware(['auth','verified'])->group(function()
-{
-    //Route::resource('note', NoteController::class);
+Route::middleware(['auth', 'verified'])->group(function () {
+    // add this line ↓
+    Route::post('/email', [EmailController::class, 'store'])->name('email.submit');
 });
 
 Route::middleware('auth')->group(function () {
@@ -14,5 +14,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
 
 require __DIR__.'/auth.php';

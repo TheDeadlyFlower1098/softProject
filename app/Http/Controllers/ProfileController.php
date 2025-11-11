@@ -57,4 +57,14 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    // public function store(Request $request) # used later for requiring a valid email to be entered
+    // {
+    //     $validated = $request->validate([
+    //         'email' => ['required', 'string', 'email', 'max:255'],
+    //     ]);
+
+    //     // Do something with $validated['email'] (save to DB, etc.)
+    //     return back()->with('success', 'Valid email entered!');
+    // }
 }
