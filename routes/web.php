@@ -1,13 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    // add this line ↓
-    Route::post('/email', [EmailController::class, 'store'])->name('email.submit');
 
 Route::get('/', function () {
     return view('welcome');
