@@ -3,21 +3,27 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrationApprovalController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // add this line ↓
     Route::post('/email', [EmailController::class, 'store'])->name('email.submit');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+Route::middleware(['auth'])->group(function () {
+    // Admin views (blade, not API)
+    Route::middleware('role:Admin,Supervisor')->group(function () {
+        Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])->name('admin.registrations');
+        Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])->name('admin.registrations.approve');
+        Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])->name('admin.registrations.deny');
+    });
 
+    // Dashboard placeholder
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
 require __DIR__.'/auth.php';
