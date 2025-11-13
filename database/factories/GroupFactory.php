@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class GroupFactory extends Factory
 {
-    public function definition(): array
+    public function definition()
     {
         return [
-            'name' => 'Group ' . $this->faker->unique()->randomLetter(),
-            'caregiver_id' => null
+            'name' => 'Group ' . $this->faker->randomElement(['A','B','C','D','E']),
+            'caregiver_id' => null,
         ];
     }
 }

@@ -3,10 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
 
-class UserFactory extends Factory
+class RegistrationRequestFactory extends Factory
 {
     public function definition()
     {
@@ -14,12 +12,12 @@ class UserFactory extends Factory
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('password'),
             'phone' => $this->faker->phoneNumber(),
             'dob' => $this->faker->date(),
-            'role_id' => Role::inRandomOrder()->first()->id ?? 1,
-            'approved' => $this->faker->boolean(90),
-            'family_code' => strtoupper($this->faker->bothify('FCODE###')),
+            'role' => $this->faker->randomElement(['Patient','Doctor','Caregiver','Family']),
+            'meta' => ['info' => $this->faker->sentence()],
+            'approved' => $this->faker->boolean(70),
+            'processed_by' => null,
         ];
     }
 }

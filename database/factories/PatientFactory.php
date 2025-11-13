@@ -4,21 +4,21 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Group;
-use Carbon\Carbon;
+use App\Models\User;
 
 class PatientFactory extends Factory
 {
-    public function definition(): array
+    public function definition()
     {
         return [
-            'user_id' => null,
-            'patient_identifier' => strtoupper($this->faker->bothify('P####')),
+            'user_id' => User::inRandomOrder()->first()->id ?? null,
+            'patient_identifier' => 'P' . strtoupper($this->faker->unique()->bothify('#####??')),
             'patient_name' => $this->faker->name(),
-            'group_id' => Group::query()->inRandomOrder()->value('id') ?? null,
-            'admission_date' => Carbon::today()->subDays(rand(1, 300)),
+            'group_id' => Group::inRandomOrder()->first()->id ?? null,
+            'admission_date' => $this->faker->dateTimeBetween('-1 year','now'),
             'emergency_contact_name' => $this->faker->name(),
             'emergency_contact_phone' => $this->faker->phoneNumber(),
-            'family_code' => strtoupper($this->faker->lexify('FCODE??')),
+            'family_code' => strtoupper($this->faker->bothify('FCODE###')),
         ];
     }
 }

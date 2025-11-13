@@ -9,14 +9,14 @@ use App\Models\Appointment;
 
 class PrescriptionFactory extends Factory
 {
-    public function definition(): array
+    public function definition()
     {
         return [
-            'patient_id' => Patient::query()->inRandomOrder()->value('id'),
-            'doctor_id' => Employee::where('role','Doctor')->inRandomOrder()->value('id'),
-            'appointment_id' => Appointment::query()->inRandomOrder()->value('id'),
+            'patient_id' => Patient::inRandomOrder()->first()->id ?? 1,
+            'doctor_id' => Employee::where('role', 'Doctor')->inRandomOrder()->first()->id ?? 1,
+            'appointment_id' => Appointment::inRandomOrder()->first()->id ?? null,
             'content' => $this->faker->sentence(8),
-            'notes' => $this->faker->sentence(12),
+            'notes' => $this->faker->sentence(),
         ];
     }
 }
