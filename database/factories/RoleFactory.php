@@ -6,20 +6,20 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RoleFactory extends Factory
 {
-    public function definition(): array
+    public function definition()
     {
-        $roles = ['Admin','Supervisor','Doctor','Caregiver','Patient','Family'];
-        $name = $this->faker->unique()->randomElement($roles);
-        return [
-            'name' => $name,
-            'access_level' => match($name) {
-                'Admin' => 100,
-                'Supervisor' => 80,
-                'Doctor' => 60,
-                'Caregiver' => 40,
-                'Patient' => 10,
-                default => 5
-            }
+        static $roles = [
+            ['name' => 'Admin', 'access_level' => 100],
+            ['name' => 'Supervisor', 'access_level' => 80],
+            ['name' => 'Doctor', 'access_level' => 60],
+            ['name' => 'Caregiver', 'access_level' => 40],
+            ['name' => 'Patient', 'access_level' => 10],
+            ['name' => 'Family', 'access_level' => 5],
         ];
+        static $i = 0;
+        $role = $roles[$i % count($roles)];
+        $i++;
+
+        return $role;
     }
 }
