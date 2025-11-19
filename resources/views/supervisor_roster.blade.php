@@ -32,6 +32,7 @@
     display:flex; gap:10px; align-items:center;
     margin:2px 0 10px 6px;
   }
+  
   .date-label{
     padding:6px 10px;
     border:3px solid #6c8bb5; 
