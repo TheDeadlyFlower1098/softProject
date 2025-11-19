@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/signup', function () {
+    return view('signup');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -27,3 +27,9 @@ require __DIR__.'/auth.php';
 Route::get('/', function () {
     return view('home');
 });
+
+
+
+
+
+

@@ -10,7 +10,7 @@
       padding: 0;
       font-family: Arial, Helvetica, sans-serif;
       color: rgb(60, 120, 216);
-      background-image: url('{{ asset('images/retirement_home.jpg') }}');
+      background-image: url('retirement_home.jpg');
       background-size: cover;
       background-position: center;
       height: 100vh;
