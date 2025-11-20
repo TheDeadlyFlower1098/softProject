@@ -15,7 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Optional custom login view (if you're using it)
 Route::get('/login', function () {
     return view('login');
 })->name('login');
