@@ -80,6 +80,7 @@
     #request_btn:hover {
       background-color: rgb(90, 150, 200);
       color: white;
+      transition: 0.2s ease-in;
     }
   </style>
 </head>
