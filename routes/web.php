@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
+use App\Http\Controllers\RegistrationRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Optional custom login view (if you're using it)
+Route::post('/signup', [RegistrationRequestController::class, 'store'])
+    ->name('signup.store');
+
 Route::get('/login', function () {
     return view('login');
 })->name('login');

@@ -80,37 +80,39 @@
     #request_btn:hover {
       background-color: rgb(90, 150, 200);
       color: white;
+      transition: 0.2s ease-in;
     }
   </style>
 </head>
 <body>
   <div id="parent-div">
-    <h1>Sign Up</h1>
+    <form action="{{ route( 'signup.store') }}" method="POST">
+      <h1>Sign Up</h1>
 
-    <div id="input_boxes_parent">
-      <div id="first_column">
-        <input type="text" name="Email_Input" id="Email_Input" placeholder="Email">
-        <input type="text" name="Password_Input" id="Password_Input" placeholder="Password">
-        <input type="text" name="first_input" id="first_input" placeholder="First Name">
-        <input type="text" name="last_input" id="last_input" placeholder="Last Name">
-        <input type="text" name="dob_input" id="dob_input" placeholder="Date of Birth">
+      <div id="input_boxes_parent">
+        <div id="first_column">
+          <input type="text" name="Email_Input" id="Email_Input" placeholder="Email">
+          <input type="text" name="Password_Input" id="Password_Input" placeholder="Password">
+          <input type="text" name="first_input" id="first_input" placeholder="First Name">
+          <input type="text" name="last_input" id="last_input" placeholder="Last Name">
+          <input type="text" name="dob_input" id="dob_input" placeholder="Date of Birth">
+        </div>
+
+        <div id="second_column">
+          <select name="role_select" id="role_select">
+            <option value="0">Select Your Role</option>
+            <option value="1">Patient</option>
+            <option value="2">Doctor</option>
+            <option value="3">Supervisor</option>
+            <option value="4">Admin</option>
+          </select>
+
+          <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
+          <input type="text" name="relation_emergency_contact" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact (i.e Son, Daughter, etc.)">
+        </div>
       </div>
-
-      <div id="second_column">
-        <select name="role_select" id="role_select">
-          <option value="0">Select Your Role</option>
-          <option value="1">Patient</option>
-          <option value="2">Doctor</option>
-          <option value="3">Supervisor</option>
-          <option value="4">Admin</option>
-        </select>
-
-        <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
-        <input type="text" name="relation_emergency_contact" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact (i.e Son, Daughter, etc.)">
-      </div>
-    </div>
-
-    <button id="request_btn">Request</button>
+      <button id="request_btn">Request</button>
+    </form>
   </div>
 </body>
 <script>
