@@ -23,6 +23,8 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
+
 
 /*
 |--------------------------------------------------------------------------
