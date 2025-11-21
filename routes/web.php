@@ -4,26 +4,89 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
 
+/*
+|--------------------------------------------------------------------------
+| Public routes
+|--------------------------------------------------------------------------
+*/
+
+// Landing page
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
+
+// Optional custom login view (if you're using it)
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth'])->group(function () {
-    // Admin views (blade, not API)
-    Route::middleware('role:Admin,Supervisor')->group(function () {
-        Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])->name('admin.registrations');
-        Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])->name('admin.registrations.approve');
-        Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])->name('admin.registrations.deny');
-    });
 
-    // Dashboard placeholder
+    // Dashboard / home
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
+
+    // Main app pages
+    Route::get('/employees', function () {
+        return view('employees');
+    })->name('employees');
+
+    Route::get('/patients', function () {
+        return view('patients');
+    })->name('patients');
+
+    Route::get('/doctor-appointments', function () {
+        return view('doctor_appointments');
+    })->name('doctor.appointments');
+
+    Route::get('/admin-report', function () {
+        return view('admin_report');
+    })->name('admin.report');
+
+    Route::get('/new-roster', function () {
+        return view('new_roster');
+    })->name('new.roster');
+
+    Route::get('/roster', function () {
+        return view('roster');
+    })->name('roster');
+
+    Route::get('/supervisor-roster', function () {
+        return view('supervisor_roster');
+    })->name('supervisor.roster');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin / Supervisor routes
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:Admin,Supervisor')->group(function () {
+        Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])
+            ->name('admin.registrations');
+
+        Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])
+            ->name('admin.registrations.approve');
+
+        Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
+            ->name('admin.registrations.deny');
+    });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Auth scaffolding routes (login, register, etc.)
+|--------------------------------------------------------------------------
+*/
 require __DIR__.'/auth.php';
-
-
-Route::get('/', function () {
-    return view('home');
-});
