@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\RegistrationRequest;
 use App\Models\User;
 use App\Models\Role;
@@ -11,39 +10,90 @@ use Illuminate\Support\Facades\Hash;
 
 class RegistrationApprovalController extends Controller
 {
-    // list pending registration requests
-    public function index()
+    /**
+     * List all pending requests.
+     */
+    public function index(Request $request)
     {
-        return view('admin.registration_requests.index', [
-            'requests' => RegistrationRequest::where('approved', false)->paginate(20)
-        ]);
+        $search = $request->input('search');
+
+        $requests = RegistrationRequest::where('approved', 0)
+            ->when($search, function ($query, $search) {
+                $query->where('id', 'LIKE', "%{$search}%")
+                    ->orWhere('first_name', 'LIKE', "%{$search}%")
+                    ->orWhere('last_name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('role', 'LIKE', "%{$search}%")
+                    ->orWhereDate('created_at', $search);
+            })
+            ->paginate(20)
+            ->appends(['search' => $search]); // Preserves search in pagination links
+
+        return view('registration_approval', compact('requests', 'search'));
     }
 
+
+    /**
+     * Approve a request + create matching user.
+     */
     public function approve(Request $request, $id)
     {
         $req = RegistrationRequest::findOrFail($id);
-        $req->approved = true;
-        $req->processed_by = $request->user()->id;
+
+        // Mark as approved
+        $req->approved = 1;
+        $req->processed_by = $request->user()->id ?? null;
         $req->save();
 
-        // Create actual user (example)
+        // Find matching role
         $role = Role::where('name', $req->role)->first();
+
+        // Create the user
         $user = User::create([
             'first_name' => $req->first_name,
             'last_name' => $req->last_name,
             'email' => $req->email,
-            'password' => Hash::make('changeme123'), // inform user to reset password
-            'role_id' => $role ? $role->id : null,
-            'approved' => true
+            'password' => Hash::make('changeme123'),
+            'role_id' => $role?->id,
+            'approved' => 1,
         ]);
 
-        return redirect()->back()->with('success','Approved and user created. Please reset password for the new user.');
+        // -------------------------------------
+        // AUTO-ASSIGN PATIENT TO RANDOM GROUP
+        // -------------------------------------
+        if ($req->role === 'Patient') {
+            $groupId = \App\Models\Group::inRandomOrder()->value('id');
+
+            \App\Models\Patient::create([
+                'user_id' => $user->id,
+                'patient_identifier' => strtoupper('P' . rand(10000,99999)),
+                'patient_name' => $req->first_name . ' ' . $req->last_name,
+                'group_id' => $groupId,
+                'admission_date' => now(),
+                'family_code' => $req->family_code ?? strtoupper('FC' . rand(100,999)),
+            ]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "{$req->first_name} {$req->last_name} approved successfully.");
     }
 
+
+    /**
+     * Deny a request and delete it.
+     */
     public function deny($id)
     {
         $req = RegistrationRequest::findOrFail($id);
+
+        $name = "{$req->first_name} {$req->last_name}";
+
+        // Remove the request entirely
         $req->delete();
-        return redirect()->back()->with('success','Registration denied and removed.');
+
+        return redirect()
+            ->back()
+            ->with('success', "Denied and removed request for {$name}.");
     }
 }

@@ -1,47 +1,97 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+    <style>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: rgb(60, 120, 216);
+            background-image: url('/images/retirement_home.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: flex-end; 
+            align-items: center;     
+            padding-right: 150px;      
+        }
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        #parent-div {
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(182, 215, 168);
+            height: 600px;
+            width: 350px;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 400;
+            margin-bottom: 80px;
+            font-size: 50px;
+        }
+
+        input {
+            display: flex;
+            font-size: 25px;
+            font-weight: 300;
+            width: 94.5%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid black;
+            border-radius: 3px;
+            background-color: rgb(201, 218, 248);
+        }
+
+        #login_body_div {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #btn_div {
+            display: flex;
+            align-items: center;
+        }
+
+        #login_btn {
+            width: 100%;
+            padding: 10px;
+            background-color: rgb(111, 168, 220);
+            border: none;
+            color: black;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        #login_btn:hover {
+            background-color: rgb(90, 150, 200);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="parent-div">
+        <h1>Login</h1>
+        <div id="login_body_div">
+            <input type="text" name="Email_Login" id="email_login" placeholder="Email">
+            <input type="password" name="Password_Login" id="password_login" placeholder="Password">
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div id="btn_div">
+            <button id="login_btn">Login</button>
         </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </div>
+</body>
+</html>
