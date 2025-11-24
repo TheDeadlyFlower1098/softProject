@@ -113,6 +113,9 @@
         </div>
       </div>
       <button id="request_btn">Request</button>
+      <p style="text-align: center; padding-top: 5px;">
+        Already a User? Sign in <a href="{{ route('login') }}">Here</a>
+      </p>
     </form>
   </div>
 </body>
