@@ -30,6 +30,7 @@ Route::get('/', function () {
 
 
 
-
-
+Route::get('/temp', function () {
+    return view('template');
+});
 
