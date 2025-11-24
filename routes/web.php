@@ -5,10 +5,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 
-<<<<<<< HEAD
-Route::get('/signup', function () {
-    return view('signup');
-=======
 /*
 |--------------------------------------------------------------------------
 | Public routes
@@ -31,7 +27,6 @@ Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'i
 
 Route::get('/registration-approval', function () {
     return view('registration_approval');
->>>>>>> f906aa45ba2eafc7ade2763601327f86ca2d108d
 });
 
 Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
@@ -112,18 +107,4 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
-<<<<<<< HEAD
 
-
-Route::get('/', function () {
-    return view('home');
-});
-
-
-
-Route::get('/temp', function () {
-    return view('dashboard');
-});
-
-=======
->>>>>>> f906aa45ba2eafc7ade2763601327f86ca2d108d
