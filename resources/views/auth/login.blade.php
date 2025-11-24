@@ -92,6 +92,10 @@
         <div id="btn_div">
             <button id="login_btn">Login</button>
         </div>
+        
+        <p>
+            Not a user yet? Sign Up <a href="{{ route('welcome') }}">Here</a>
+        </p>
     </div>
 </body>
 </html>
