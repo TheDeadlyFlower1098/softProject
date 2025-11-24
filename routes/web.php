@@ -25,7 +25,19 @@ Route::get('/login', function () {
 
 Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
 
+Route::get('/registration-approval', function () {
+    return view('registration_approval');
+});
 
+Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+    ->name('registration.approval');
+
+Route::post('/registration-approval/approve/{id}', [RegistrationApprovalController::class, 'approve'])
+    ->name('registration.approve');
+
+Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController::class, 'deny'])
+    ->name('registration.deny');
+    
 /*
 |--------------------------------------------------------------------------
 | Authenticated routes
