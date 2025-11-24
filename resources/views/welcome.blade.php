@@ -87,6 +87,7 @@
 <body>
   <div id="parent-div">
     <form action="{{ route( 'signup.store') }}" method="POST">
+      @csrf
       <h1>Sign Up</h1>
 
       <div id="input_boxes_parent">
