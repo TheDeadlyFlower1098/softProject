@@ -1,102 +1,135 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard — Side Nav</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up</title>
   <style>
-    :root{
-      --bg:#0f1724;
-      --muted:#9aa7bd;
-      --accent:#6ee7b7;
-      --glass: rgba(255,255,255,0.03);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter, ui-sans-serif, system-ui;
-      background:linear-gradient(180deg,#061023 0%, #081426 100%);
-      color:#e6eef8;
-    }
-
-    .app{
-      display:flex;
-      min-height:100vh;
-      padding:24px;
-      gap:24px;
-      background: rgb(111, 168, 220);
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: rgb(60, 120, 216);
+      background-image: url('retirement_home.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      display: flex;
+      justify-content: flex-end;  
+      align-items: center;        
+      padding-right: 150px;
     }
 
-    .sidebar{
-      width:260px;
-      background: rgb(111, 168, 220);
-      border-radius:12px;
-      padding:18px;
-      backdrop-filter:blur(6px);
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      flex-shrink:0;
+    #parent-div {
+      background-color: rgb(182, 215, 168);
+      width: 500px;
+      height: 600px;
+      padding: 40px;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     }
 
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      width:44px;height:44px;
-      border-radius:10px;
-      background:linear-gradient(135deg,var(--accent),#4dd6b1);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:700;color:#022;
-    }
-    .brand h1{margin:0;font-size:16px}
-    .brand p{margin:0;font-size:12px;color:var(--muted)}
-
-    .nav{display:flex;flex-direction:column;gap:6px}
-    .nav a{
-      padding:10px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      color:inherit;
-      text-decoration:none;
-      border-radius:8px;
-      font-size:14px;
-    }
-    .nav a:hover{background:var(--glass)}
-    .nav a.active{
-      background:linear-gradient(90deg, rgba(110,231,183,0.12), rgba(110,231,183,0.06));
+    h1 {
+      font-weight: 400;
+      font-size: 48px;
+      margin-top: 0;
+      margin-bottom: 30px;
     }
 
-    @media (max-width:900px){
-      .sidebar{display:none}
-      .app{padding:14px}
+    #input_boxes_parent {
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+    }
+
+    .patient_inputs {
+      display: none;
+    }
+
+    #first_column, #second_column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 48%;
+    }
+
+    input,
+    select {
+      font-size: 18px;
+      background-color: rgb(201, 218, 248);
+      border: 1px solid black;
+      border-radius: 3px;
+      padding: 10px;
+      margin: 5px;
+    }
+
+    #request_btn {
+      display: block;
+      margin: 75px auto 0 auto;
+      width: 200px;
+      padding: 10px;
+      background-color: rgb(111, 168, 220);
+      border: none;
+      color: black;
+      font-weight: bold;
+      font-size: 22px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    #request_btn:hover {
+      background-color: rgb(90, 150, 200);
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="logo">DB</div>
-        <div>
-          <h1>Control Panel</h1>
-          <p>Acme Analytics</p>
-        </div>
+  <div id="parent-div">
+    <h1>Sign Up</h1>
+
+    <div id="input_boxes_parent">
+      <div id="first_column">
+        <input type="text" name="Email_Input" id="Email_Input" placeholder="Email">
+        <input type="text" name="Password_Input" id="Password_Input" placeholder="Password">
+        <input type="text" name="first_input" id="first_input" placeholder="First Name">
+        <input type="text" name="last_input" id="last_input" placeholder="Last Name">
+        <input type="text" name="dob_input" id="dob_input" placeholder="Date of Birth">
       </div>
 
-      <nav class="nav">
-        <a href="#">Overview</a>
-        <a href="#">Reports</a>
-        <a href="#">Projects</a>
-        <a href="#">Settings</a>
-      </nav>
-    </aside>
-  </div>
+      <div id="second_column">
+        <select name="role_select" id="role_select">
+          <option value="0">Select Your Role</option>
+          <option value="1">Patient</option>
+          <option value="2">Doctor</option>
+          <option value="3">Supervisor</option>
+          <option value="4">Admin</option>
+        </select>
 
-  <script>
-    document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click', ()=>{
-      document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
-      a.classList.add('active');
-    }));
-  </script>
+        <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
+        <input type="text" name="relation_emergency_contact" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact (i.e Son, Daughter, etc.)">
+      </div>
+    </div>
+
+    <button id="request_btn">Request</button>
+  </div>
 </body>
+<script>
+  const select_tag = document.getElementById("role_select")
+  const emergency_contact_input = document.getElementById("emergency_contact_input")
+  const relation_emergency_contact = document.getElementById("relation_emergency_input")
+  function togglePatientInputs() {
+    if (select_tag.value === "1") {
+      emergency_contact_input.style.display = "block";
+      relation_emergency_contact.style.display = "block";
+    } else {
+      emergency_contact_input.style.display = "none";
+      relation_emergency_contact.style.display = "none";
+    }
+  }
+
+  // Run once when page loads
+  togglePatientInputs();
+
+  select_tag.addEventListener("change", togglePatientInputs);
+</script>
 </html>
