@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Database Viewer</title>
+    <meta http-equiv="refresh" content="5">
+
 
     <style>
         body {

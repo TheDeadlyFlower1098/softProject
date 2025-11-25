@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
+use App\Http\Controllers\LoginAuthController;
+
 /*
 |--------------------------------------------------------------------------
 | Public routes
@@ -22,7 +23,10 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
-Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
+Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
+    ->name('login_attempt');
+
+Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index']);
 
 Route::get('/registration-approval', function () {
     return view('registration_approval');
@@ -106,8 +110,6 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
-
-
 
 Route::get('/', function () {
     return view('home');
