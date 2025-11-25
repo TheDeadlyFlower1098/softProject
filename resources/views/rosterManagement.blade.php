@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Roster</title>
+@extends('layouts.app')
+
+@section('title', 'Roster Management')
+
+@section('content')
+
 <style>
   :root{
     --blue-100:#d9e9fb;
@@ -81,27 +81,28 @@
   }
   .rail p{margin:0; font-weight:600; font-size: 20px; text-align: center;}
 </style>
-</head>
-<body>
-  <div class="layout">
-    <div class="left">
-      <h1 class="title">Admin / Supervisor Roster</h1>
 
-      <div class="date-row">
-        <span class="date-label">Date:</span>
-        <input class="date-input" type="date">
-        <button id="create-btn">Create New Roster</button>
-      </div>
+<div class="layout">
+  
+  <div class="left">
+    <h1 class="title">Admin / Supervisor Roster</h1>
 
-      <section class="card">
-        <div class="bar"></div>
-        <div class="canvas"></div>
-      </section>
+    <div class="date-row">
+      <span class="date-label">Date:</span>
+      <input class="date-input" type="date">
+      <button id="create-btn">Create New Roster</button>
     </div>
 
-    <aside class="rail">
-      <p>Everyone's dashboard</p>
-    </aside>
+    <section class="card">
+      <div class="bar"></div>
+      <div class="canvas"></div>
+    </section>
   </div>
-</body>
-</html>
+
+  <aside class="rail">
+    <p>Everyone's dashboard</p>
+  </aside>
+
+</div>
+
+@endsection

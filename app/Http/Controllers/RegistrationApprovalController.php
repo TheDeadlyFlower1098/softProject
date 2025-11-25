@@ -19,16 +19,17 @@ class RegistrationApprovalController extends Controller
 
         $requests = RegistrationRequest::where('approved', 0)
             ->when($search, function ($query, $search) {
-                $query->where('id', 'LIKE', "%{$search}%")
+                $query->where(function ($q) use ($search) {
+                    $q->where('id', 'LIKE', "%{$search}%")
                     ->orWhere('first_name', 'LIKE', "%{$search}%")
                     ->orWhere('last_name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('role', 'LIKE', "%{$search}%")
                     ->orWhereDate('created_at', $search);
+                });
             })
             ->paginate(20)
-            ->appends(['search' => $search]); // Preserves search in pagination links
-
+            ->appends(['search' => $search]);
         return view('registration_approval', compact('requests', 'search'));
     }
 
