@@ -83,15 +83,20 @@
 </head>
 <body>
     <div id="parent-div">
-        <h1>Login</h1>
-        <div id="login_body_div">
-            <input type="text" name="Email_Login" id="email_login" placeholder="Email">
-            <input type="password" name="Password_Login" id="password_login" placeholder="Password">
-        </div>
+        <form action="{{ route('login_attempt') }}" method="POST">
+            @csrf
 
-        <div id="btn_div">
-            <button id="login_btn">Login</button>
-        </div>
+            <h1>Login</h1>
+
+            <div id="login_body_div">
+                <input type="text" name="Email_Login" id="email_login" placeholder="Email">
+                <input type="password" name="Password_Login" id="password_login" placeholder="Password">
+            </div>
+
+            <div id="btn_div">
+                <button id="login_btn" type="submit">Login</button>
+            </div>
+        </form>
         
         <p>
             Not a user yet? Sign Up <a href="{{ route('welcome') }}">Here</a>
