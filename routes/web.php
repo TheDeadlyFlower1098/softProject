@@ -4,7 +4,21 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\LoginAuthController;
+// use App\Models\Patient;
 
+// Route::get('/dashboard', function () {
+//     $patient = Patient::where('user_id', auth()->id())->first();
+//     return view('dashboard', compact('patient'));
+// })->name('dashboard');
+
+// Route::get('/info', function () {
+//     $patient = Patient::first(); // or find(id)
+//     return view('patientAdditional', compact('patient'));
+// });
+
+Route::get('/info', function () {
+    return view('patientAdditional');
+})->name('patientAdditional');
 /*
 |--------------------------------------------------------------------------
 | Public routes
@@ -49,10 +63,8 @@ Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController:
 
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard / home
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+
+    //
 
     Route::get('/home', function () {
         return view('home');
@@ -111,12 +123,6 @@ Route::middleware(['auth'])->group(function () {
 */
 require __DIR__.'/auth.php';
 
-Route::get('/', function () {
-    return view('home');
-});
 
 
 
-Route::get('/temp', function () {
-    return view('dashboard');
-});
