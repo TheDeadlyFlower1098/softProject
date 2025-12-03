@@ -38,7 +38,7 @@
   .title{
     font-size: 40px;
     font-weight: 700;
-    margin: 10px 0 14px 6px;   /* slight indent like mock */
+    margin: 10px 0 14px 6px;
   }
 
   /* Green form card */
@@ -137,7 +137,6 @@
           <div class="field full">
             <label for="date">Date</label>
             <input type="text" id="date">
-            <!-- Or: <input type="date" id="date"> -->
           </div>
 
           <div class="field full">
