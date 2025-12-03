@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LoginAuthController;
 // use App\Models\Patient;
 
@@ -83,9 +84,9 @@ Route::middleware(['auth'])->group(function () {
         return view('doctor_appointments');
     })->name('doctor.appointments');
 
-    Route::get('/admin-report', function () {
-        return view('admin_report');
-    })->name('admin.report');
+    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
+
 
     Route::get('/new-roster', function () {
         return view('new_roster');
