@@ -25,7 +25,7 @@
     .page {
       width: 1000px;
       min-height: 560px;
-      background: #d6e6f7; /* light blue */
+      background: #d6e6f7;
       padding: 25px 30px;
       margin-top: 20px;
     }
@@ -106,29 +106,17 @@
     }
 
     .grid-column {
-        flex: 1 1 0;
-        border-right: 1px solid #6f7fa2;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
+      flex: 1 1 0;
+      border-right: 1px solid #6f7fa2;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     .grid-column:last-child {
-        border-right: none;
+      border-right: none;
     }
 
-    /* box that visually matches the mockup */
-    .grid-box {
-      width: 45px;
-      height: 25px;
-      border: 1px solid #6f7fa2;
-      background: #c9d8ec;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* actual checkbox inside the box */
     .grid-checkbox {
       width: 18px;
       height: 18px;
@@ -136,7 +124,6 @@
       transform: translateY(-5px);
     }
 
-    /* RIGHT PATIENT INFO PANEL */
     .patient-panel {
       flex: 1 1 0;
       background: #a7bddd;
@@ -160,7 +147,6 @@
       align-items: flex-start;
     }
 
-    /* simple sun icon */
     .sun {
       width: 50px;
       height: 50px;
@@ -193,7 +179,6 @@
       font-size: 16px;
       padding-left: 10px;
     }
-
   </style>
 </head>
 
@@ -208,11 +193,11 @@
         <div class="top-inputs">
           <div class="input-group">
             <span class="input-label">Date:</span>
-            <input class="top-input" type="text">
+            <input class="top-input" type="text" value="{{ now()->toDateString() }}" readonly>
           </div>
           <div class="input-group">
             <span class="input-label">caregiver:</span>
-            <input class="top-input" type="text">
+            <input class="top-input" type="text" value="{{ auth()->user()->name }}" readonly>
           </div>
         </div>
 
@@ -226,32 +211,61 @@
           <div>Medicine 3</div>
         </div>
 
-        <!-- grid body -->
-        <div class="grid-body">
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
+        <!-- grid body + form -->
+        <form action="{{ route('medicinecheck.saveToday') }}" method="POST">
+          @csrf
+          <div class="grid-body">
+            {{-- Breakfast -> morning --}}
+            <div class="grid-column">
+              <input
+                type="checkbox"
+                name="morning"
+                value="1"
+                class="grid-checkbox"
+                {{ optional($todayMedicineCheck)->morning ? 'checked' : '' }}>
+            </div>
+
+            {{-- Lunch -> afternoon --}}
+            <div class="grid-column">
+              <input
+                type="checkbox"
+                name="afternoon"
+                value="1"
+                class="grid-checkbox"
+                {{ optional($todayMedicineCheck)->afternoon ? 'checked' : '' }}>
+            </div>
+
+            {{-- Dinner -> night --}}
+            <div class="grid-column">
+              <input
+                type="checkbox"
+                name="night"
+                value="1"
+                class="grid-checkbox"
+                {{ optional($todayMedicineCheck)->night ? 'checked' : '' }}>
+            </div>
+
+            {{-- Medicine 1/2/3: visual only for now --}}
+            <div class="grid-column">
+              <input type="checkbox" class="grid-checkbox" disabled>
+            </div>
+
+            <div class="grid-column">
+              <input type="checkbox" class="grid-checkbox" disabled>
+            </div>
+
+            <div class="grid-column">
+              <input type="checkbox" class="grid-checkbox" disabled>
+            </div>
           </div>
 
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
+          <div style="margin-top:15px; text-align:right;">
+            <button type="submit"
+                    style="padding:6px 16px; border:1px solid #4f6ea2; background:#c9d8ec; cursor:pointer;">
+              Save
+            </button>
           </div>
-
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
-          </div>
-
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
-          </div>
-
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
-          </div>
-
-          <div class="grid-column">
-            <input type="checkbox" class="grid-checkbox">
-          </div>
-        </div>
+        </form>
       </div>
 
       <!-- RIGHT PATIENT INFO PANEL -->
@@ -263,8 +277,81 @@
           <div class="sun"></div>
         </div>
 
-        <input class="patient-input" placeholder="Patient Name" />
-        <input class="patient-input" placeholder="Patient ID" />
+        {{-- PATIENT NAME --}}
+        <label>Patient Name</label>
+        <input class="patient-input"
+               value="{{ $patient->patient_name }}"
+               readonly />
+
+        {{-- PATIENT IDENTIFIER / ID --}}
+        <label>Patient ID</label>
+        <input class="patient-input"
+               value="{{ $patient->patient_identifier }}"
+               readonly />
+
+        {{-- TODAY'S APPOINTMENT --}}
+        <h3>Today's Appointment</h3>
+
+        @if($todayAppointments->isEmpty())
+          <p>No appointment scheduled for today.</p>
+        @else
+          @foreach($todayAppointments as $appt)
+            <p>
+              {{ $appt->date->format('g:i A') }}
+              with Dr. {{ $appt->doctor->name ?? 'Unknown' }}
+              @if(!empty($appt->status))
+                ({{ ucfirst($appt->status) }})
+              @endif
+            </p>
+          @endforeach
+        @endif
+
+        {{-- TODAY'S MEDICINE CHECK --}}
+        <h3>Medicine (today)</h3>
+
+        @if(!$todayMedicineCheck)
+          <p>No medicine checklist recorded yet for today.</p>
+        @else
+          <ul class="med-status-list">
+            <li>Morning: {{ $todayMedicineCheck->morning ? 'Taken' : 'Not taken' }}</li>
+            <li>Afternoon: {{ $todayMedicineCheck->afternoon ? 'Taken' : 'Not taken' }}</li>
+            <li>Night: {{ $todayMedicineCheck->night ? 'Taken' : 'Not taken' }}</li>
+          </ul>
+          <p style="font-size: 0.8rem; opacity: 0.8;">
+            Date: {{ $todayMedicineCheck->date->format('Y-m-d') }}
+          </p>
+        @endif
+
+        {{-- CURRENT PRESCRIPTIONS --}}
+        <h3>Current Prescriptions</h3>
+
+        @if(!$latestPrescription || $latestPrescription->items->isEmpty())
+            <p>No prescriptions recorded.</p>
+        @else
+            <p style="font-size:0.9rem; opacity:0.85;">
+                Prescribed by Dr. {{ $latestPrescription->doctor->name ?? 'Unknown' }}
+                on {{ $latestPrescription->created_at->format('Y-m-d') }}
+            </p>
+
+            <table class="med-table" style="width:100%; margin-top:8px; font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Medicine</th>
+                        <th style="text-align:left;">Dosage</th>
+                        <th style="text-align:left;">Frequency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($latestPrescription->items as $item)
+                    <tr>
+                        <td>{{ $item->name }}</td>
+                        <td>{{ $item->dosage }}</td>
+                        <td>{{ $item->frequency }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        @endif
       </div>
     </div>
   </div>

@@ -32,4 +32,10 @@ class Patient extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+        public function medicineChecks()
+    {
+        return $this->hasMany(\App\Models\MedicineCheck::class);
+    }
+
 }
