@@ -20,17 +20,14 @@ Route::get('/', function () {
 
 Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index']);
 
-Route::get('/registration-approval', function () {
-    return view('registration_approval');
-});
-
-Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+// Admin approval page + actions
+Route::get('/admin/registration-approval', [RegistrationRequestController::class, 'index'])
     ->name('registration.approval');
 
-Route::post('/registration-approval/approve/{id}', [RegistrationApprovalController::class, 'approve'])
+Route::post('/admin/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
     ->name('registration.approve');
 
-Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController::class, 'deny'])
+Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
     ->name('registration.deny');
 
 /*
