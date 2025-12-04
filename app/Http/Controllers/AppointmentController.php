@@ -50,4 +50,13 @@ class AppointmentController extends Controller
         Appointment::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
+
+    public function dashboard()
+    {
+        $pastAppointments = Appointment::where('date', '<', now())
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('appointments.dashboard', compact('pastAppointments'));
+    }
 }

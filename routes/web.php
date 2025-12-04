@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\LoginAuthController;
+use App\Http\Controllers\DoctorHomeController;
 // use App\Models\Patient;
 
 // Route::get('/dashboard', function () {
@@ -54,6 +55,15 @@ Route::post('/registration-approval/approve/{id}', [RegistrationApprovalControll
 
 Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController::class, 'deny'])
     ->name('registration.deny');
+
+
+
+Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+    ->name('doctorHome');
+
+
+Route::get('/appointments/dashboard', [AppointmentController::class, 'dashboard']);
+
     
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +108,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/supervisor-roster', function () {
         return view('supervisor_roster');
     })->name('supervisor.roster');
+
+
 
     /*
     |--------------------------------------------------------------------------
