@@ -193,22 +193,12 @@ window.onload = function() {
     <section class="activity-card">
       <div class="tag">Missed activity</div>
 
-        <!-- Big light-blue bar -->
-        <div class="big-bar"></div>
+      <div class="missed-list" id="missed_list">
+        <div class="missed-item">Select a date to load missed activities.</div>
+      </div>
+    </section>
 
-        <!-- Row of six checkboxes -->
-        <div class="checkbox-row">
-          <input type="checkbox" class="cb" id="doctor-appointment-cb" name="doctor_appointment">
-          <input type="checkbox" class="cb" id="morning-meds-cb"    name="morning_meds">
-          <input type="checkbox" class="cb" id="afternoon-meds-cb"  name="afternoon_meds">
-          <input type="checkbox" class="cb" id="night-meds-cb"      name="night_meds">
-          <input type="checkbox" class="cb" id="breakfast-cb"       name="breakfast">
-          <input type="checkbox" class="cb" id="lunch-cb"           name="lunch">
-        </div>
-
-        <div class="spacer"></div>
-      </section>
-    </main>
+  </main>
 
   <!-- RIGHT SIDEBAR -->
   <aside class="right-rail">
