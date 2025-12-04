@@ -34,4 +34,3 @@ class LoginAuthController extends Controller
         ])->onlyInput('Email_Login');
     }
 }
-

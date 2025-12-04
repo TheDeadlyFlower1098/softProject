@@ -133,13 +133,17 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:Admin,Supervisor')->group(function () {
         Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])
             ->name('admin.registrations');
+      
+    // Route::middleware('role:Admin,Supervisor')->group(function () {
+    //     Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])
+    //         ->name('admin.registrations');
 
-        Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])
-            ->name('admin.registrations.approve');
+    //     Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])
+    //         ->name('admin.registrations.approve');
 
-        Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
-            ->name('admin.registrations.deny');
-    });
+    //     Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
+    //         ->name('admin.registrations.deny');
+    // });
 });
 
 /*
@@ -149,4 +153,9 @@ Route::middleware(['auth'])->group(function () {
 */
 require __DIR__.'/auth.php';
 
+
+
+
+Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index'])
+    ->name('dataviewer');
 
