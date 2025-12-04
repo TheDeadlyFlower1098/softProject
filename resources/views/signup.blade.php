@@ -23,7 +23,6 @@
     #parent-div {
       background-color: rgb(182, 215, 168);
       width: 500px;
-      height: 600px;
       padding: 40px;
       border-radius: 5px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
@@ -60,12 +59,12 @@
       border: 1px solid black;
       border-radius: 3px;
       padding: 10px;
-      margin: 5px;
+      margin: 5px 0;
     }
 
     #request_btn {
       display: block;
-      margin: 75px auto 0 auto;
+      margin: 40px auto 0 auto;
       width: 200px;
       padding: 10px;
       background-color: rgb(111, 168, 220);
@@ -87,49 +86,94 @@
   <div id="parent-div">
     <h1>Sign Up</h1>
 
-    <div id="input_boxes_parent">
-      <div id="first_column">
-        <input type="text" name="Email_Input" id="Email_Input" placeholder="Email">
-        <input type="text" name="Password_Input" id="Password_Input" placeholder="Password">
-        <input type="text" name="first_input" id="first_input" placeholder="First Name">
-        <input type="text" name="last_input" id="last_input" placeholder="Last Name">
-        <input type="text" name="dob_input" id="dob_input" placeholder="Date of Birth">
+    <form id="signup_form">
+      <div id="input_boxes_parent">
+        <div id="first_column">
+          <input type="email" name="email" id="Email_Input" placeholder="Email" required>
+          <input type="password" name="password" id="Password_Input" placeholder="Password" required>
+          <input type="text" name="first_name" id="first_input" placeholder="First Name" required>
+          <input type="text" name="last_name" id="last_input" placeholder="Last Name" required>
+          <input type="date" name="dob" id="dob_input" placeholder="Date of Birth" required>
+        </div>
+
+        <div id="second_column">
+          <select name="role" id="role_select" required>
+            <option value="0">Select Your Role</option>
+            <option value="1">Patient</option>
+            <option value="2">Doctor</option>
+            <option value="3">Supervisor</option>
+            <option value="4">Admin</option>
+          </select>
+
+          <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
+          <input type="text" name="relation_emergency" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact">
+        </div>
       </div>
 
-      <div id="second_column">
-        <select name="role_select" id="role_select">
-          <option value="0">Select Your Role</option>
-          <option value="1">Patient</option>
-          <option value="2">Doctor</option>
-          <option value="3">Supervisor</option>
-          <option value="4">Admin</option>
-        </select>
-
-        <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
-        <input type="text" name="relation_emergency_contact" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact (i.e Son, Daughter, etc.)">
-      </div>
-    </div>
-
-    <button id="request_btn">Request</button>
+      <button type="submit" id="request_btn">Request</button>
+    </form>
   </div>
-</body>
-<script>
-  const select_tag = document.getElementById("role_select")
-  const emergency_contact_input = document.getElementById("emergency_contact_input")
-  const relation_emergency_contact = document.getElementById("relation_emergency_input")
-  function togglePatientInputs() {
-    if (select_tag.value === "1") {
-      emergency_contact_input.style.display = "block";
-      relation_emergency_contact.style.display = "block";
-    } else {
-      emergency_contact_input.style.display = "none";
-      relation_emergency_contact.style.display = "none";
+
+  <script>
+    const select_tag = document.getElementById("role_select");
+    const emergency_contact_input = document.getElementById("emergency_contact_input");
+    const relation_emergency_contact = document.getElementById("relation_emergency_input");
+
+    function togglePatientInputs() {
+      if (select_tag.value === "1") {
+        emergency_contact_input.style.display = "block";
+        relation_emergency_contact.style.display = "block";
+        emergency_contact_input.required = true;
+        relation_emergency_contact.required = true;
+      } else {
+        emergency_contact_input.style.display = "none";
+        relation_emergency_contact.style.display = "none";
+        emergency_contact_input.required = false;
+        relation_emergency_contact.required = false;
+      }
     }
-  }
 
-  // Run once when page loads
-  togglePatientInputs();
+    togglePatientInputs();
+    select_tag.addEventListener("change", togglePatientInputs);
 
-  select_tag.addEventListener("change", togglePatientInputs);
-</script>
+    // Handle form submission
+    const form = document.getElementById("signup_form");
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const data = {
+        email: document.getElementById("Email_Input").value,
+        password: document.getElementById("Password_Input").value,
+        first_name: document.getElementById("first_input").value,
+        last_name: document.getElementById("last_input").value,
+        dob: document.getElementById("dob_input").value,
+        role: document.getElementById("role_select").value,
+        emergency_contact: document.getElementById("emergency_contact_input").value,
+        relation_emergency: document.getElementById("relation_emergency_input").value
+      };
+
+      fetch("/signup_endpoint.php", { // replace with your backend URL
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        if(response.status === "success"){
+          alert("Request sent successfully!");
+          form.reset();
+          togglePatientInputs();
+        } else {
+          alert("Error: " + response.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error sending request");
+      });
+    });
+  </script>
+</body>
 </html>

@@ -139,23 +139,23 @@
 
     <main>
       <div class="container">
-        <h1>Upcoming Appointments</h1>
-        <!-- search -->
-        <input type="text" id="search" placeholder="Search appointments by name..." style="width:100%; padding:10px; border-radius:8px; margin-bottom:15px; border:none; background: rgba(255,255,255,0.05); color:#fff;">
-            <div class="appointments" id="upcomingAppointments">
-            <div class="appointment">
-                <h3>Dr. Smith</h3>
-                <p><strong>Date:</strong> 2025-12-05</p>
-                <p><strong>Time:</strong> 10:00 AM</p>
-                <p><strong>Reason:</strong> Checkup</p>
-            </div>
-            <div class="appointment">
-                <h3>Dr. Johnson</h3>
-                <p><strong>Date:</strong> 2025-12-10</p>
-                <p><strong>Time:</strong> 2:00 PM</p>
-                <p><strong>Reason:</strong> Flu Symptoms</p>
-            </div>
-            </div>
+        <div class="appointments" id="upcomingAppointments">
+    @forelse ($appointments as $appointment)
+        <div class="appointment" style="position:relative; padding:15px; background: rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px;">
+            <h3>{{ $appointment->patient->name }}</h3>
+            <p><strong>Date:</strong> {{ $appointment->date }}</p>
+            <p><strong>Time:</strong> {{ $appointment->time }}</p>
+            <p><strong>Reason:</strong> {{ $appointment->reason }}</p>
+
+            <a href="{{ route('appointment.details', $appointment->id) }}" 
+               style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
+               View Info
+            </a>
+        </div>
+    @empty
+        <p>No upcoming appointments.</p>
+    @endforelse
+</div>
                 <h1>Past Appointments</h1>
 
         <div id="PastAppointments">

@@ -14,7 +14,7 @@ class MedicineCheck extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'datetime',
         'morning' => 'boolean',
         'afternoon' => 'boolean',
         'night' => 'boolean'

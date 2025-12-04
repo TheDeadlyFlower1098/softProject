@@ -36,9 +36,9 @@ class EmployeeController extends Controller
         $emp = Employee::findOrFail($id);
 
         $data = $request->validate([
-            'name' => 'sometimes|required|string',
-            'role' => 'sometimes|required|string',
-            'salary' => 'nullable|numeric'
+            'name'   => 'sometimes|string',
+            'role'   => 'sometimes|string',
+            'salary' => 'sometimes|numeric'
         ]);
 
         $emp->update($data);
@@ -51,4 +51,53 @@ class EmployeeController extends Controller
         Employee::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
+
+    public function filtered(Request $request)
+    {
+        \Log::info("FILTER REQUEST", $request->all());
+
+        try {
+            $q = Employee::query();
+
+            // ID filter
+            if ($request->filled('id')) {
+                $data = Employee::where('id', $request->id)->get();
+                return response()->json($data);
+            }
+
+            // Name filter
+            if ($request->filled('name')) {
+                $data = Employee::where('name', 'LIKE', '%' . $request->name . '%')->get();
+                return response()->json($data);
+            }
+
+            // Role filter
+            if ($request->filled('role')) {
+                $role = strtolower(trim($request->role));
+                $data = Employee::whereRaw("LOWER(role) LIKE ?", ["%{$role}%"])->get();
+                return response()->json($data);
+            }
+
+            // Min salary
+            if ($request->filled('min_salary')) {
+                $data = Employee::where('salary', '>=', $request->min_salary)->get();
+                return response()->json($data);
+            }
+
+            // Max salary
+            if ($request->filled('max_salary')) {
+                $data = Employee::where('salary', '<=', $request->max_salary)->get();
+                return response()->json($data);
+            }
+
+            // Nothing filled → return all
+            $data = Employee::all();
+            return response()->json($data);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
 }
