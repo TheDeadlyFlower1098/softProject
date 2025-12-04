@@ -45,7 +45,7 @@ Route::middleware('guest')->group(function () {
     })->name('login');
 
     Route::get('/signup', function () {
-        return view('signup');
+        return view('welcome');
     })->name('signup');
 
     Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
