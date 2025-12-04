@@ -16,16 +16,38 @@ class PrescriptionController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'required|exists:employees,id',
-            'appointment_id' => 'nullable|exists:appointments,id',
-            'content' => 'required|string',
-            'notes' => 'nullable|string'
+            'patient_id'    => 'required|exists:patients,id',
+            'doctor_id'     => 'required|exists:employees,id',
+            'appointment_id'=> 'nullable|exists:appointments,id',
+            'content'       => 'nullable|string',
+            'notes'         => 'nullable|string',
+
+            'items'                     => 'required|array',
+            'items.*.name'              => 'required|string',
+            'items.*.dosage'            => 'nullable|string',
+            'items.*.frequency'         => 'nullable|string',
+            'items.*.instructions'      => 'nullable|string',
         ]);
 
-        $prescription = Prescription::create($data);
-        return response()->json($prescription, 201);
+        // Create the base prescription
+        $prescription = Prescription::create([
+            'patient_id'     => $data['patient_id'],
+            'doctor_id'      => $data['doctor_id'],
+            'appointment_id' => $data['appointment_id'] ?? null,
+            'content'        => $data['content'] ?? null,
+            'notes'          => $data['notes'] ?? null,
+        ]);
+
+        // Create each prescription item
+        foreach ($data['items'] as $itemData) {
+            $prescription->items()->create($itemData);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', 'Prescription saved.');
     }
+
 
     public function show($id)
     {

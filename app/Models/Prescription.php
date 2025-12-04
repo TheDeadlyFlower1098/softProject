@@ -9,7 +9,13 @@ class Prescription extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['patient_id','doctor_id','appointment_id','content','notes'];
+    protected $fillable = [
+        'patient_id',
+        'doctor_id',
+        'appointment_id',
+        'content',
+        'notes',
+    ];
 
     public function patient()
     {
@@ -19,5 +25,10 @@ class Prescription extends Model
     public function doctor()
     {
         return $this->belongsTo(Employee::class, 'doctor_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(PrescriptionItem::class);
     }
 }
