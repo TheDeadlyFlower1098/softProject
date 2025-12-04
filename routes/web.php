@@ -88,6 +88,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
     Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
 
+    Route::get('/patient_dashboard', function () {
+        return view('patient_dashboard');
+    })->name('patient.dashboard');
 
     Route::get('/new-roster', function () {
         return view('new_roster');
