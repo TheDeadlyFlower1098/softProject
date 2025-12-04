@@ -119,7 +119,7 @@ Route::middleware(['auth'])->group(function () {
 
         return redirect('/'); // or wherever you want after logout
     })->name('logout');
-
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -150,9 +150,4 @@ Route::middleware(['auth'])->group(function () {
 */
 require __DIR__.'/auth.php';
 
-
-
-
-Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index'])
-    ->name('dataviewer');
 
