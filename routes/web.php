@@ -141,7 +141,7 @@ Route::middleware(['auth'])->group(function () {
     //     Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
     //         ->name('admin.registrations.deny');
     // });
-});
+    });
 
 /*
 |--------------------------------------------------------------------------
