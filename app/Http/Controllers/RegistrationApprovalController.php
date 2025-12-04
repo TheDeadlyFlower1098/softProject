@@ -54,7 +54,7 @@ class RegistrationApprovalController extends Controller
             'first_name' => $req->first_name,
             'last_name' => $req->last_name,
             'email' => $req->email,
-            'password' => Hash::make('changeme123'),
+            'password' => $req->password,
             'role_id' => $role?->id,
             'approved' => 1,
         ]);

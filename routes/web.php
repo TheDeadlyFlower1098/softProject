@@ -18,16 +18,6 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::post('/signup', [RegistrationRequestController::class, 'store'])
-    ->name('signup.store');
-
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
-
-Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
-    ->name('login_attempt');
-
 Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index']);
 
 Route::get('/registration-approval', function () {
@@ -42,6 +32,28 @@ Route::post('/registration-approval/approve/{id}', [RegistrationApprovalControll
 
 Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController::class, 'deny'])
     ->name('registration.deny');
+
+/*
+|--------------------------------------------------------------------------
+| Guest routes (still public)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+
+    Route::get('/login', function () {
+        return view('login');
+    })->name('login');
+
+    Route::get('/signup', function () {
+        return view('signup');
+    })->name('signup');
+
+    Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
+        ->name('login_attempt');
+
+    Route::post('/signup', [RegistrationRequestController::class, 'store'])
+        ->name('signup.store');
+});
     
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard / home
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('patient_dashboard');
     })->name('dashboard');
 
     Route::get('/home', function () {
