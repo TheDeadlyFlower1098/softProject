@@ -11,14 +11,6 @@ use App\Http\Controllers\MedicineCheckController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 
-
-// PUBLIC EMPLOYEE ROUTES (for testing)
-Route::get('/employees/filter', [EmployeeController::class, 'filtered']);
-Route::get('/employees', [EmployeeController::class, 'index']);
-Route::get('/employees/{id}', [EmployeeController::class, 'show']);
-Route::put('/employees/{id}', [EmployeeController::class, 'update']);
-
-
 // PROTECTED ROUTES
 Route::middleware('auth:sanctum')->group(function () {
 
