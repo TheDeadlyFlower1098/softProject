@@ -249,9 +249,52 @@ footer {
                 <span>cle</span>
             </a>
             <ul class="nav-links">
-                <li><a href="#">LOG IN</a></li>
-                <li><a href="#">SIGN UP</a></li>
+
+                {{-- When NO user is logged in --}}
+                @guest
+                    <li><a href="{{ route('login') }}">LOG IN</a></li>
+                    <li><a href="{{ route('register') }}">SIGN UP</a></li>
+                @endguest
+
+                {{-- When SOMEONE is logged in --}}
+                @auth
+                    {{-- Links every logged-in user can see --}}
+                    <li><a href="{{ url('home') }}">Home</a></li>
+
+                    {{-- Patient-only links --}}
+                    @if(auth()->user()->role === 'patient')
+                        <li><a href="{{ route('patient.dashboard') }}">Patient Dashboard</a></li>
+                        <li><a href="{{ route('patient.appointments') }}">My Appointments</a></li>
+                    @endif
+
+                    {{-- Doctor-only links --}}
+                    @if(auth()->user()->role === 'doctor')
+                        <li><a href="{{ route('doctor.dashboard') }}">Doctor Dashboard</a></li>
+                        <li><a href="{{ route('doctor.patients') }}">My Patients</a></li>
+                    @endif
+
+                    {{-- Supervisor + Admin links --}}
+                    @if(in_array(auth()->user()->role, ['supervisor', 'admin']))
+                        <li><a href="{{ route('employees.index') }}">Employees</a></li>
+                        <li><a href="{{ route('roster.index') }}">Roster</a></li>
+                    @endif
+
+                    {{-- Admin-only links --}}
+                    @if(auth()->user()->role === 'admin')
+                        <li><a href="{{ route('roles.index') }}">Roles</a></li>
+                        <li><a href="{{ route('admin.report') }}">Admin Report</a></li>
+                    @endif
+
+                    {{-- Logout button --}}
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                @endauth
             </ul>
+
         </div>
     </nav>
 
