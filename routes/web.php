@@ -122,7 +122,7 @@ Route::middleware(['auth'])->group(function () {
 
         return redirect('/'); // or wherever you want after logout
     })->name('logout');
-
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -144,7 +144,7 @@ Route::middleware(['auth'])->group(function () {
     //     Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
     //         ->name('admin.registrations.deny');
     // });
-});
+    });
 
 /*
 |--------------------------------------------------------------------------
