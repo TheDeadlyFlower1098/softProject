@@ -287,7 +287,7 @@ footer {
 
                     {{-- Logout button --}}
                     <li>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit">Logout</button>
                         </form>
