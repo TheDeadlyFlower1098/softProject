@@ -5,23 +5,14 @@ use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LoginAuthController;
-use App\Http\Controllers\DoctorHomeController;
-// use App\Models\Patient;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientDashboardController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MedicineCheckController;
+use App\Http\Controllers\FamilyDashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\AppointmentController;
 
-Route::get('/appointments/{id}/details', [AppointmentController::class, 'details'])
-    ->name('appointment.details');
-
-// });
-
-Route::get('/info', function () {
-    return view('patientAdditional');
-})->name('patientAdditional');
 /*
 |--------------------------------------------------------------------------
 | Public routes
@@ -35,18 +26,18 @@ Route::get('/', function () {
 
 Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index']);
 
-Route::get('/registration-approval', function () {
-    return view('registration_approval');
-});
-
-Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+// Admin approval page + actions
+Route::get('/admin/registration-approval', [RegistrationRequestController::class, 'index'])
     ->name('registration.approval');
 
-Route::post('/registration-approval/approve/{id}', [RegistrationApprovalController::class, 'approve'])
+Route::post('/admin/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
     ->name('registration.approve');
 
-Route::post('/registration-approval/deny/{id}', [RegistrationApprovalController::class, 'deny'])
+Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
     ->name('registration.deny');
+    
+Route::get('/appointments/{id}/details', [AppointmentController::class, 'details'])
+    ->name('appointment.details');
 
 Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
     ->name('doctorHome');
@@ -66,7 +57,7 @@ Route::middleware('guest')->group(function () {
     })->name('login');
 
     Route::get('/signup', function () {
-        return view('signup');
+        return view('welcome');
     })->name('signup');
 
     Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
@@ -74,6 +65,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
+
+    Route::get('/family-member', function () {
+        return view('family_member');
+    })->name('family.member');
 });
 Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::class, 'appointmentDetails'])
     ->name('appointment.details');
@@ -145,7 +140,10 @@ Route::middleware(['auth'])->group(function () {
         return view('supervisor_roster');
     })->name('supervisor.roster');
 
-
+    Route::middleware(['auth', 'role:Family'])->group(function () {
+        Route::get('/family-dashboard', [\App\Http\Controllers\FamilyDashboardController::class, 'index'])
+            ->name('family.dashboard');
+    });
 
     Route::post('/logout', function () {
         Auth::logout();
@@ -177,7 +175,7 @@ Route::middleware(['auth'])->group(function () {
     //     Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
     //         ->name('admin.registrations.deny');
     // });
-});
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -186,9 +184,4 @@ Route::middleware(['auth'])->group(function () {
 */
 require __DIR__.'/auth.php';
 
-
-
-
-Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index'])
-    ->name('dataviewer');
 
