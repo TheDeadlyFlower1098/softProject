@@ -155,7 +155,7 @@ Route::middleware(['auth'])->group(function () {
 
         return redirect('/'); // or wherever you want after logout
     })->name('logout');
-
+});
 
     /*
     |--------------------------------------------------------------------------
