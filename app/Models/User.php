@@ -31,9 +31,13 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    // if user is a patient:
+    public function familyMember()
+    {
+        return $this->hasOne(\App\Models\FamilyMember::class);
+    }
+
     public function patient()
     {
-        return $this->hasOne(Patient::class, 'user_id');
+        return $this->hasOne(\App\Models\Patient::class);
     }
 }
