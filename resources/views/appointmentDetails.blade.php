@@ -83,7 +83,7 @@
 
     button, .back-button {
       padding: 10px 20px;
-      background: #5a73b1ff;
+      background: #6cacd1ff;
       color: #022;
       border-radius: 8px;
       text-decoration: none;
@@ -281,10 +281,32 @@
 
       <button type="submit" style="margin-top:15px;">Save Prescription</button>
   </form>
+  <div class="patient-info-box">
+  <h2>Previous Prescriptions</h2>
+
+  @if($prescriptions->isEmpty())
+      <p>No previous prescriptions from you for this patient.</p>
+  @else
+      @foreach($prescriptions as $p)
+          <div style="margin-bottom:12px;padding:10px;background:#d5ecc0;border-radius:8px;">
+              <div><strong>Date:</strong> {{ $p->created_at->format('M d, Y H:i') }}</div>
+              <div style="margin-top:6px;"><strong>Prescription:</strong></div>
+              <div>{{ $p->content }}</div>
+
+              @if($p->notes)
+                  <div style="margin-top:6px;"><strong>Notes:</strong></div>
+                  <div>{{ $p->notes }}</div>
+              @endif
+          </div>
+      @endforeach
+  @endif
+</div>
+
 </div>
 
 
-      <a href="#" class="back-button">Back to Dashboard</a>
+     <a href="{{ route('doctorHome') }}" class="back-button">Back to Doctor Home</a>
+
 
     </main>
   </div>
