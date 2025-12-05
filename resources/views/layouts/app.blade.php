@@ -32,40 +32,62 @@
       background: rgb(111, 168, 220);
       border-radius:12px;
       padding:18px;
-      backdrop-filter:blur(6px);
       display:flex;
       flex-direction:column;
       gap:18px;
       flex-shrink:0;
     }
 
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      width:44px;height:44px;
-      border-radius:10px;
-      display:flex;align-items:center;justify-content:center;
-      font-weight:700;color:#022;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
     }
-    .brand h1{margin:0;font-size:16px}
-    .nav{display:flex;flex-direction:column;gap:6px}
+
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#022;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      color:#022;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:20px;
+    }
 
     .nav a{
       padding:10px;
       display:flex;
       align-items:center;
       gap:12px;
-      color:rgb(182, 215, 168);
+      color:#022;
       text-decoration:none;
       border-radius:8px;
-      font-size:14px;
+      font-size:15px;
       background:rgba(74, 113, 150, 1);
       border:2px solid rgb(182, 215, 168);
-      margin-top:20px;
     }
 
-    .nav a:hover{background:var(--glass)}
+    .nav a:hover{
+      background:rgba(255,255,255,0.15);
+    }
+
     .nav a.active{
-      background:linear-gradient(90deg, rgba(110,231,183,0.12), rgba(110,231,183,0.06));
+      background:linear-gradient(90deg, rgba(110,231,183,0.15), rgba(110,231,183,0.08));
+      border-color:#6ee7b7;
     }
 
     .logo-img{
@@ -92,30 +114,57 @@
         </div>
 
         <div>
-          <h1>Dash Board</h1>
+          <h1>Dashboard</h1>
         </div>
       </div>
 
       <nav class="nav">
-        <a href="#">page 1</a>
-        <a href="#">page 2</a>
-        <a href="#">page 3</a>
-        <a href="#">page 4</a>
+        {{-- These are wired to REAL routes you already have --}}
+
+        <a href="{{ route('registration.approval') }}"
+           class="{{ request()->routeIs('registration.approval') ? 'active' : '' }}">
+            Approve Requests
+        </a>
+
+        <a href="{{ route('patients') }}"
+           class="{{ request()->routeIs('patients') ? 'active' : '' }}">
+            Patient Info
+        </a>
+
+        <a href="{{ route('admin.report') }}"
+           class="{{ request()->routeIs('admin.report') ? 'active' : '' }}">
+            Admin Reports
+        </a>
+
+        <a href="{{ route('home') }}"
+           class="{{ request()->routeIs('home') ? 'active' : '' }}">
+            Home
+        </a>
+
+        <a href="{{ route('dashboard') }}"
+           class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            Dashboard
+        </a>
       </nav>
     </aside>
 
     {{-- Main Content --}}
-    <main class="main-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; color:#fff;">
+    <main class="main-content"
+          style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; color:#fff;">
+      
       @yield('content')
+
     </main>
 
   </div>
 
   <script>
-    document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
-      document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
-      a.classList.add('active');
-    }));
+    document.querySelectorAll('.nav a').forEach(a =>
+        a.addEventListener('click', () => {
+          document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+          a.classList.add('active');
+        })
+    );
   </script>
 </body>
 </html>
