@@ -124,6 +124,7 @@
             <option value="2">Doctor</option>
             <option value="3">Supervisor</option>
             <option value="4">Admin</option>
+            <option value="5">Family</option>
           </select>
 
           {{-- Patient-only fields --}}
