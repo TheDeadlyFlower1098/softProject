@@ -43,12 +43,67 @@ class RegistrationRequestController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. Validate base inputs
         $validated = $request->validate([
             'Email_Input'                => 'required|email',
             'Password_Input'             => 'required|min:6',
             'first_input'                => 'required|string',
             'last_input'                 => 'required|string',
             'dob_input'                  => 'required|date',
+            'role_select'                => 'required|integer',
+            'emergency_contact'          => 'nullable|string',
+            'relation_emergency_contact' => 'nullable|string',
+            'linked_patient_identifier'  => 'nullable|string',
+        ]);
+
+        // Map the dropdown numeric value -> role name string
+        $roleMap = [
+            1 => 'Patient',
+            2 => 'Doctor',
+            3 => 'Supervisor',
+            4 => 'Admin',
+            5 => 'Family',        // this must match what you use elsewhere
+        ];
+
+        $roleSelect = (int) $validated['role_select'];
+        $roleName   = $roleMap[$roleSelect] ?? null;
+
+        if (!$roleName) {
+            return back()
+                ->withErrors(['role_select' => 'Please select a valid role.'])
+                ->withInput();
+        }
+
+        // 2. Handle the family-specific requirement
+        $linkedPatientId = null;
+
+        if ($roleName === 'Family') {
+            $request->validate([
+                'linked_patient_identifier' => 'required|string',
+            ]);
+
+            $linkedPatientId = $request->input('linked_patient_identifier');
+        }
+
+        // 3. Save signup request (this is what the admin approves later)
+        RegistrationRequest::create([
+            'first_name'                => $validated['first_input'],
+            'last_name'                 => $validated['last_input'],
+            'email'                     => $validated['Email_Input'],
+            'password'                  => Hash::make($validated['Password_Input']),
+            'dob'                       => $validated['dob_input'],
+            'role'                      => $roleName,                 // <-- store string
+            'emergency_contact'         => $validated['emergency_contact'] ?? null,
+            'relation_to_contact'       => $validated['relation_emergency_contact'] ?? null,
+            'linked_patient_identifier' => $linkedPatientId,          // <-- now saved
+            'approved'                  => false,
+        ]);
+
+        // 4. Redirect back with a flash message
+        return redirect()
+            ->back()
+            ->with('success', 'Signup submitted - pending admin approval.');
+    }
             'role_select'                => 'required',
             'emergency_contact'          => 'nullable|string',
             'relation_emergency_contact' => 'nullable|string',

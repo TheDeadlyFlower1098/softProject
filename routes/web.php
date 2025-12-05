@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientDashboardController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MedicineCheckController;
+use App\Http\Controllers\FamilyDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
+
+    Route::get('/family-member', function () {
+        return view('family_member');
+    })->name('family.member');
 });
     
 /*
@@ -110,6 +115,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/supervisor-roster', function () {
         return view('supervisor_roster');
     })->name('supervisor.roster');
+
+    Route::middleware(['auth', 'role:Family'])->group(function () {
+        Route::get('/family-dashboard', [\App\Http\Controllers\FamilyDashboardController::class, 'index'])
+            ->name('family.dashboard');
+    });
 
     Route::post('/logout', function () {
         Auth::logout();

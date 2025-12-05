@@ -126,8 +126,18 @@
             <option value="4">Admin</option>
           </select>
 
+          {{-- Patient-only fields --}}
           <input type="text" name="emergency_contact" class="patient_inputs" id="emergency_contact_input" placeholder="Emergency Contact Full Name">
           <input type="text" name="relation_emergency_contact" class="patient_inputs" id="relation_emergency_input" placeholder="Relation to Emergency Contact (i.e Son, Daughter, etc.)">
+          
+          {{-- Family-only field: patient ID they want to view --}}
+          <input
+            type="text"
+            name="linked_patient_identifier"
+            id="linked_patient_identifier_input"
+            placeholder="Patient ID Number (for Family Member)"
+            style="display:none;"
+          >
         </div>
       </div>
       <button id="request_btn">Request</button>
@@ -138,22 +148,34 @@
   </div>
 </body>
 <script>
-  const select_tag = document.getElementById("role_select")
-  const emergency_contact_input = document.getElementById("emergency_contact_input")
-  const relation_emergency_contact = document.getElementById("relation_emergency_input")
-  function togglePatientInputs() {
+  const select_tag = document.getElementById("role_select");
+  const emergency_contact_input = document.getElementById("emergency_contact_input");
+  const relation_emergency_contact = document.getElementById("relation_emergency_input");
+  const family_patient_input = document.getElementById("linked_patient_identifier_input");
+
+  function toggleRoleInputs() {
     if (select_tag.value === "1") {
+      // Patient selected
       emergency_contact_input.style.display = "block";
       relation_emergency_contact.style.display = "block";
-    } else {
+      family_patient_input.style.display = "none";
+    } else if (select_tag.value === "5") {
+      // Family Member selected
       emergency_contact_input.style.display = "none";
       relation_emergency_contact.style.display = "none";
+      family_patient_input.style.display = "block";
+    } else {
+      // Any other role
+      emergency_contact_input.style.display = "none";
+      relation_emergency_contact.style.display = "none";
+      family_patient_input.style.display = "none";
     }
   }
 
-  // Run once when page loads
-  togglePatientInputs();
+  // Run once on page load (in case of validation errors / old value)
+  toggleRoleInputs();
 
-  select_tag.addEventListener("change", togglePatientInputs);
+  select_tag.addEventListener("change", toggleRoleInputs);
 </script>
+
 </html>
