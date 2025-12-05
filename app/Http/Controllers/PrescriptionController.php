@@ -4,50 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Prescription;
+use App\Models\Appointment;   // <-- important
 use Illuminate\Http\Request;
 
 class PrescriptionController extends Controller
 {
     public function index()
     {
-        return response()->json(Prescription::with(['patient','doctor'])->paginate(20));
+        return response()->json(Prescription::with(['patient', 'doctor'])->paginate(20));
     }
 
-    public function store(Request $request)
+    /**
+     * Store a new prescription for a given appointment.
+     *
+     * Route: POST /appointments/{appointment}/prescriptions
+     */
+    public function store(Request $request, Appointment $appointment)
     {
-        $data = $request->validate([
-            'patient_id'    => 'required|exists:patients,id',
-            'doctor_id'     => 'required|exists:employees,id',
-            'appointment_id'=> 'nullable|exists:appointments,id',
-            'content'       => 'nullable|string',
-            'notes'         => 'nullable|string',
-
-            'items'                     => 'required|array',
-            'items.*.name'              => 'required|string',
-            'items.*.dosage'            => 'nullable|string',
-            'items.*.frequency'         => 'nullable|string',
-            'items.*.instructions'      => 'nullable|string',
+        // Only validate the fields your form actually has
+        $validated = $request->validate([
+            'content' => 'required|string',
+            'notes'   => 'nullable|string',
         ]);
 
-        // Create the base prescription
+        // Create the prescription
         $prescription = Prescription::create([
-            'patient_id'     => $data['patient_id'],
-            'doctor_id'      => $data['doctor_id'],
-            'appointment_id' => $data['appointment_id'] ?? null,
-            'content'        => $data['content'] ?? null,
-            'notes'          => $data['notes'] ?? null,
+            'patient_id'     => $appointment->patient_id,   // from the appointment
+            'doctor_id'      => auth()->id(),               // adjust if you use employees table
+            'appointment_id' => $appointment->id,
+            'content'        => $validated['content'],
+            'notes'          => $validated['notes'] ?? null,
         ]);
-
-        // Create each prescription item
-        foreach ($data['items'] as $itemData) {
-            $prescription->items()->create($itemData);
-        }
 
         return redirect()
-            ->back()
+            ->route('appointment.details', $appointment->id)
             ->with('success', 'Prescription saved.');
     }
-
 
     public function show($id)
     {
@@ -59,7 +51,7 @@ class PrescriptionController extends Controller
         $p = Prescription::findOrFail($id);
         $data = $request->validate([
             'content' => 'sometimes|required|string',
-            'notes' => 'nullable|string',
+            'notes'   => 'nullable|string',
         ]);
         $p->update($data);
         return response()->json($p);
@@ -68,6 +60,6 @@ class PrescriptionController extends Controller
     public function destroy($id)
     {
         Prescription::findOrFail($id)->delete();
-        return response()->json(['message'=>'Deleted']);
+        return response()->json(['message' => 'Deleted']);
     }
 }
