@@ -10,6 +10,8 @@ use App\Http\Controllers\PatientDashboardController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MedicineCheckController;
 use App\Http\Controllers\FamilyDashboardController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\AppointmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +35,15 @@ Route::post('/admin/registration-approval/{id}/approve', [RegistrationRequestCon
 
 Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
     ->name('registration.deny');
+    
+Route::get('/appointments/{id}/details', [AppointmentController::class, 'details'])
+    ->name('appointment.details');
+
+Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+    ->name('doctorHome');
+
+
+// Route::get('/appointments/dashboard', [AppointmentController::class, 'dashboard']);
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +70,10 @@ Route::middleware('guest')->group(function () {
         return view('family_member');
     })->name('family.member');
 });
+Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::class, 'appointmentDetails'])
+    ->name('appointment.details');
+
+
     
 /*
 |--------------------------------------------------------------------------
@@ -73,10 +88,6 @@ Route::middleware(['auth'])->group(function () {
         return view('patient_dashboard');
     })->name('dashboard');
 
-    Route::post('/patient_dashboard/medicine-check', [MedicineCheckController::class, 'saveForTodayFromDashboard'])
-        ->middleware('auth')
-        ->name('medicinecheck.saveToday');
-
     Route::get('/home', function () {
         return view('home');
     })->name('home');
@@ -86,10 +97,27 @@ Route::middleware(['auth'])->group(function () {
         return view('employees');
     })->name('employees');
 
-    Route::get('/patients', function () {
-        return view('patients');
-    })->name('patients');
+//     Route::get('/patients', function () {
+//         return view('patients');
+//     })->name('patients');
+    Route::post('/patient_dashboard/medicine-check', [MedicineCheckController::class, 'saveForTodayFromDashboard'])
+        ->middleware('auth')
+        ->name('medicinecheck.saveToday');
 
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
+
+    // Route::get('/doctor-appointments', function () {
+    //     return view('doctor_appointments');
+    // })->name('doctor.appointments');
+
+    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
+
+//     Route::get('/patient_dashboard', function () {
+//         return view('patient_dashboard');
+//     })->name('patient.dashboard');
     Route::post('/medicine-check', [MedicineCheckController::class, 'store'])
     ->name('medicinecheck.store');
 
@@ -97,20 +125,16 @@ Route::middleware(['auth'])->group(function () {
         return view('doctor_appointments');
     })->name('doctor.appointments');
 
-    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
-    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
-
-    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
-        ->middleware('auth')
-        ->name('patient.dashboard');
-
     Route::get('/new-roster', function () {
         return view('new_roster');
     })->name('new.roster');
 
-    Route::get('/roster', function () {
-        return view('roster');
-    })->name('roster');
+//     Route::get('/roster', function () {
+//         return view('roster');
+//     })->name('roster');
+    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
+        ->middleware('auth')
+        ->name('patient.dashboard');
 
     Route::get('/supervisor-roster', function () {
         return view('supervisor_roster');
