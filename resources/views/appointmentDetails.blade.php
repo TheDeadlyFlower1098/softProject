@@ -250,23 +250,39 @@
       </div>
 
       <div class="patient-info-box">
-        <h2>Add Prescription</h2>
-        <form action="#" method="POST">
-          <div>
-            <label for="medication"><strong>Medication:</strong></label>
-            <input type="text" id="medication" name="medication" required>
-          </div>
-          <div>
-            <label for="dosage_time"><strong>Time to Take:</strong></label>
-            <input type="time" id="dosage_time" name="dosage_time" required>
-          </div>
-          <div>
-            <label for="comment"><strong>Comment:</strong></label>
-            <textarea id="comment" name="comment" rows="3"></textarea>
-          </div>
-          <button type="submit">Save Prescription</button>
-        </form>
+  <h2>Add Prescription</h2>
+
+  {{-- Validation errors --}}
+  @if ($errors->any())
+      <div style="background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:10px;">
+          <strong>There were some problems with your input:</strong>
+          <ul>
+              @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+              @endforeach
+          </ul>
       </div>
+  @endif
+
+  <form method="POST" action="{{ route('appointments.prescriptions.store', $appointment->id) }}">
+      @csrf
+
+      {{-- main prescription text --}}
+      <label for="content"><strong>Prescription</strong></label>
+      <textarea id="content" name="content" rows="4" required>{{ old('content') }}</textarea>
+
+      {{-- optional notes for staff/patient --}}
+      <label for="notes" style="margin-top:10px;"><strong>Additional Notes</strong></label>
+      <textarea id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
+
+      {{-- you can keep these hidden, or fill them in controller --}}
+      <input type="hidden" name="appointment_id" value="{{ $appointment->id }}">
+      <input type="hidden" name="patient_id" value="{{ $appointment->patient->id }}">
+
+      <button type="submit" style="margin-top:15px;">Save Prescription</button>
+  </form>
+</div>
+
 
       <a href="#" class="back-button">Back to Dashboard</a>
 

@@ -1,17 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LoginAuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientDashboardController;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MedicineCheckController;
 use App\Http\Controllers\FamilyDashboardController;
 use App\Http\Controllers\DoctorController;
-// use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\DoctorHomeController;
+use App\Http\Controllers\PrescriptionController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes related to prescriptions / appointments
+|--------------------------------------------------------------------------
+*/
+
+// store prescription for an appointment
+Route::post(
+    '/appointments/{appointment}/prescriptions',
+    [PrescriptionController::class, 'store']
+)->name('appointments.prescriptions.store');
+
+// view a single appointment's details
+Route::get('/appointments/{id}/details', [DoctorHomeController::class, 'appointmentDetails'])
+    ->name('appointment.details');
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +42,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::get('/dataviewer', [App\Http\Controllers\DataViewerController::class, 'index']);
+Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
 
-// Admin approval page + actions
+// Admin approval page + actions (registration requests)
 Route::get('/admin/registration-approval', [RegistrationRequestController::class, 'index'])
     ->name('registration.approval');
 
@@ -35,19 +53,15 @@ Route::post('/admin/registration-approval/{id}/approve', [RegistrationRequestCon
 
 Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
     ->name('registration.deny');
-    
-// Route::get('/appointments/{id}/details', [AppointmentController::class, 'details'])
-//     ->name('appointment.details');
 
+/**
+ * Doctor home route – uses DoctorHomeController
+ */
 Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
     ->name('doctorHome');
 
 Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::class, 'appointmentDetails'])
     ->name('appointment.details');
-
-
-// Route::get('/appointments/dashboard', [AppointmentController::class, 'dashboard']);
-
 /*
 |--------------------------------------------------------------------------
 | Guest routes (still public)
@@ -89,8 +103,6 @@ Route::middleware('guest')->group(function () {
 
 });
 
-
-    
 /*
 |--------------------------------------------------------------------------
 | Authenticated routes
@@ -109,29 +121,11 @@ Route::middleware(['auth'])->group(function () {
         return view('employees');
     })->name('employees');
 
-//     Route::get('/patients', function () {
-//         return view('patients');
-//     })->name('patients');
     Route::post('/patient_dashboard/medicine-check', [MedicineCheckController::class, 'saveForTodayFromDashboard'])
-        ->middleware('auth')
         ->name('medicinecheck.saveToday');
 
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
-
-    // Route::get('/doctor-appointments', function () {
-    //     return view('doctor_appointments');
-    // })->name('doctor.appointments');
-
-    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
-    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
-
-//     Route::get('/patient_dashboard', function () {
-//         return view('patient_dashboard');
-//     })->name('patient.dashboard');
     Route::post('/medicine-check', [MedicineCheckController::class, 'store'])
-    ->name('medicinecheck.store');
+        ->name('medicinecheck.store');
 
     Route::get('/doctor-appointments', function () {
         return view('doctor_appointments');
@@ -141,19 +135,15 @@ Route::middleware(['auth'])->group(function () {
         return view('new_roster');
     })->name('new.roster');
 
-//     Route::get('/roster', function () {
-//         return view('roster');
-//     })->name('roster');
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
-        ->middleware('auth')
         ->name('patient.dashboard');
 
     Route::get('/supervisor-roster', function () {
         return view('supervisor_roster');
     })->name('supervisor.roster');
 
-    Route::middleware(['auth', 'role:Family'])->group(function () {
-        Route::get('/family-dashboard', [\App\Http\Controllers\FamilyDashboardController::class, 'index'])
+    Route::middleware(['role:Family'])->group(function () {
+        Route::get('/family-dashboard', [FamilyDashboardController::class, 'index'])
             ->name('family.dashboard');
     });
 
@@ -163,31 +153,20 @@ Route::middleware(['auth'])->group(function () {
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return redirect('/'); // or wherever you want after logout
+        return redirect('/');
     })->name('logout');
 });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin / Supervisor routes
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Admin / Supervisor routes
+|--------------------------------------------------------------------------
+*/
 
-    Route::middleware('role:Admin,Supervisor')->group(function () {
-        Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])
-            ->name('admin.registrations');
-      
-    // Route::middleware('role:Admin,Supervisor')->group(function () {
-    //     Route::get('/admin/registrations', [RegistrationApprovalController::class,'index'])
-    //         ->name('admin.registrations');
-
-    //     Route::post('/admin/registrations/{id}/approve', [RegistrationApprovalController::class,'approve'])
-    //         ->name('admin.registrations.approve');
-
-    //     Route::post('/admin/registrations/{id}/deny', [RegistrationApprovalController::class,'deny'])
-    //         ->name('admin.registrations.deny');
-    // });
-    });
+Route::middleware('role:Admin,Supervisor')->group(function () {
+    Route::get('/admin/registrations', [RegistrationApprovalController::class, 'index'])
+        ->name('admin.registrations');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -195,5 +174,3 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 require __DIR__.'/auth.php';
-
-
