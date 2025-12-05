@@ -4,59 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
-use App\Models\Roster;
-use App\Models\Employee;
 use Illuminate\Http\Request;
 
-class AppointmentController extends Controller
+class DoctorHomeController extends Controller
 {
     public function index()
     {
-        return response()->json(Appointment::with(['patient','doctor'])->paginate(20));
-    }
+        // Your existing logic to get upcoming and past appointments
+        $userId = auth()->id(); // example
+        $upcomingAppointments = Appointment::where('doctor_id', $userId)
+            ->where('date', '>=', now())
+            ->orderBy('date')
+            ->get();
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'nullable|exists:employees,id',
-            'date' => 'required|date_format:Y-m-d H:i:s',
-            'notes' => 'nullable|string'
-        ]);
-
-        $appointment = Appointment::create($data);
-        return response()->json($appointment, 201);
-    }
-
-    public function show($id)
-    {
-        return response()->json(Appointment::with(['patient','doctor'])->findOrFail($id));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $a = Appointment::findOrFail($id);
-        $data = $request->validate([
-            'date' => 'sometimes|date_format:Y-m-d H:i:s',
-            'notes' => 'nullable|string',
-            'status' => 'nullable|string'
-        ]);
-        $a->update($data);
-        return response()->json($a);
-    }
-
-    public function destroy($id)
-    {
-        Appointment::findOrFail($id)->delete();
-        return response()->json(['message' => 'Deleted']);
-    }
-
-    public function dashboard()
-    {
-        $pastAppointments = Appointment::where('date', '<', now())
+        $pastAppointments = Appointment::where('doctor_id', $userId)
+            ->where('date', '<', now())
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('appointments.dashboard', compact('pastAppointments'));
+        return view('doctorHome', compact('upcomingAppointments', 'pastAppointments'));
+    }
+
+    // <-- Place the new method here inside the same class
+    public function appointmentDetails($id)
+    {
+        $appointment = Appointment::with('patient.user', 'doctor')->findOrFail($id);
+
+        return view('appointmentDetails', compact('appointment'));
     }
 }

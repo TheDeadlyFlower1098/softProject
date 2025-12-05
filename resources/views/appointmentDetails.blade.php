@@ -99,26 +99,135 @@
       .sidebar { display: none; }
       .app { padding: 14px; }
     }
+  :root {
+    --bg: #0f1724;
+    --muted: #9aa7bd;
+    --accent: #6ee7b7;
+    --card-bg: rgba(255,255,255,0.05);
+    --button-bg: #4ade80;
+    --button-hover: #22c55e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, Arial, sans-serif;
+    background: #5466aa;
+    color: #e6eef8;
+  }
 
-  </style>
+  .app {
+    display: flex;
+    min-height: 100vh;
+    gap: 24px;
+    padding: 24px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background: rgb(111, 168, 220);
+    border-radius: 12px;
+    padding: 18px;
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo-img { width:50px; height:50px; border-radius:10px; }
+  .nav { display:flex; flex-direction:column; gap:6px; margin-top:20px; }
+  .nav a {
+    padding:10px;
+    display:flex;
+    align-items:center;
+    color: rgb(182, 215, 168);
+    text-decoration:none;
+    border-radius:8px;
+    font-size:14px;
+    background: rgba(74,113,150,1);
+    border: 2px solid rgb(182,215,168);
+    transition: 0.2s;
+  }
+  .nav a:hover { background: rgba(255,255,255,0.1); }
+  .nav a.active { background: linear-gradient(90deg, rgba(110,231,183,0.12), rgba(110,231,183,0.06)); }
+
+  /* Main content */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 700px;
+    padding: 20px;
+    background-color: #6791c3ff; 
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(66, 104, 122, 1);
+  }
+
+  h1, h2 { text-align: center; color: #e6eef8; }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  input, select, textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    background: var(--card-bg);
+    color: #fff;
+  }
+
+  button {
+    padding: 12px;
+    background-color: var(--button-bg);
+    color: #0f1724;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover { background-color: var(--button-hover); }
+
+  .appointments { margin-top: 20px; }
+  .appointment {
+    padding: 15px;
+    background: var(--card-bg);
+    border-left: 4px solid var(--accent);
+    margin-bottom: 12px;
+    border-radius: 10px;
+    transition: transform 0.2s;
+  }
+  .appointment:hover { transform: translateY(-2px); }
+
+  .appointment h3 { margin: 0 0 5px 0; color: #fff; }
+  .appointment p { margin: 2px 0; color: var(--muted); }
+</style>
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="logo">
-          <img src="images/sun.png" alt="Logo" style="width:70px; height:70px;">
+          <img src="{{ asset('images/sun.png') }}" alt="Logo" class="logo-img">
         </div>
-        <div>
-          <h1>Dash Board</h1>
-        </div>
+        <h1>Dashboard</h1>
       </div>
       <nav class="nav">
-        <a href="#">page 1</a>
-        <a href="#">page 2</a>
-        <a href="#">page 3</a>
-        <a href="#">page 4</a>
+        <a href="#" class="active">Appointments</a>
+        <a href="#">Page 2</a>
+        <a href="#">Page 3</a>
+        <a href="#">Page 4</a>
       </nav>
     </aside>
 
@@ -129,13 +238,14 @@
       <div class="patient-info-box">
         <h2>Appointment Details</h2>
         <div class="patient-info-grid">
-          <div><strong>Patient Name:</strong></div><div><!-- {{ $appointment->patient->name }} --></div>
-          <div><strong>Patient ID:</strong></div><div><!-- {{ $appointment->patient->id }} --></div>
-          <div><strong>Group:</strong></div><div><!-- {{ $appointment->patient->group }} --></div>
-          <div><strong>Admission Date:</strong></div><div><!-- {{ $appointment->patient->admission_date }} --></div>
-          <div><strong>Appointment Date:</strong></div><div><!-- {{ $appointment->date }} --></div>
-          <div><strong>Time:</strong></div><div><!-- {{ $appointment->time }} --></div>
-          <div><strong>Reason / Comments:</strong></div><div><!-- {{ $appointment->reason }} --></div>
+          <div><strong>Patient Name:</strong></div><div>{{ $appointment->patient && $appointment->patient->user 
+            ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name 
+            : 'No Patient' }}</div>
+          <div><strong>Patient ID:</strong></div><div>{{ $appointment->patient->id }}</div>
+          <!-- <div><strong>Group:</strong></div><div>{{ $appointment->patient->group }}</div> -->
+          <div><strong>Admission Date:</strong></div><div>{{ $appointment->patient->admission_date }}</div>
+          <div><strong>Appointment Date:</strong></div><div>{{ $appointment->date }}</div>
+          <div><strong>Reason / Comments:</strong></div><div>{{ $appointment->notes }}</div>
         </div>
       </div>
 

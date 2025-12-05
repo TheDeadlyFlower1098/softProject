@@ -140,24 +140,26 @@
     <main>
       <div class="container">
         <div class="appointments" id="upcomingAppointments">
-    @forelse ($appointments as $appointment)
-        <div class="appointment" style="position:relative; padding:15px; background: rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px;">
-            <h3>{{ $appointment->patient->name }}</h3>
-            <p><strong>Date:</strong> {{ $appointment->date }}</p>
-            <p><strong>Time:</strong> {{ $appointment->time }}</p>
-            <p><strong>Reason:</strong> {{ $appointment->reason }}</p>
+            <h1>upcomingAppointments</h1>
+    @forelse ($upcomingAppointments as $appointment)
+    <div class="appointment" style="position:relative; padding:15px; background: rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px;">
+   <h3>
+        {{ $appointment->patient && $appointment->patient->user 
+            ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name 
+            : 'No Patient' }}
+    </h3>
+        <p><strong>Date:</strong> {{ $appointment->date }}</p>
+        <p><strong>Reason:</strong> {{ $appointment->notes }}</p>
 
-            <a href="{{ route('appointment.details', $appointment->id) }}" 
-               style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
-               View Info
-            </a>
-        </div>
-    @empty
-        <p>No upcoming appointments.</p>
-    @endforelse
+        <a href="{{ route('appointment.details', $appointment->id) }}"
+           style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
+           View Info
+        </a>
+    </div>
+@empty
+    <p>No upcoming appointments.</p>
+@endforelse
 </div>
-                <h1>Past Appointments</h1>
-
         <div id="PastAppointments">
         <h1>Past Appointments</h1>
 

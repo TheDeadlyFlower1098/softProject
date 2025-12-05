@@ -72,7 +72,7 @@ nav {
     padding: 0;
 }
 
-.nav-links a {
+.nav-links a, button {
     display: flex;
     align-items: center;       
     justify-content: center;   

@@ -47,7 +47,7 @@ class DoctorHomeController extends Controller
     public function appointmentDetails($id)
 {
     $appointment = Appointment::with('patient')->findOrFail($id);
-    return view('doctor.appointment_details', compact('appointment'));
+    return view('appointmentDetails', compact('appointment'));
 }
 
 }

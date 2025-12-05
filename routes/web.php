@@ -5,21 +5,15 @@ use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LoginAuthController;
-
 use App\Http\Controllers\DoctorHomeController;
 // use App\Models\Patient;
-
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\AppointmentController;
 
+Route::get('/appointments/{id}/details', [AppointmentController::class, 'details'])
+    ->name('appointment.details');
 
-// Route::get('/dashboard', function () {
-//     $patient = Patient::where('user_id', auth()->id())->first();
-//     return view('dashboard', compact('patient'));
-// })->name('dashboard');
-
-// Route::get('/info', function () {
-//     $patient = Patient::first(); // or find(id)
-//     return view('patientAdditional', compact('patient'));
 // });
 
 Route::get('/info', function () {
@@ -55,7 +49,7 @@ Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
     ->name('doctorHome');
 
 
-Route::get('/appointments/dashboard', [AppointmentController::class, 'dashboard']);
+// Route::get('/appointments/dashboard', [AppointmentController::class, 'dashboard']);
 
 /*
 |--------------------------------------------------------------------------
@@ -78,7 +72,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
 });
-Route::get('/appointments/{id}', [DoctorController::class, 'appointmentDetails'])->name('appointment.details');
+Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::class, 'appointmentDetails'])
+    ->name('appointment.details');
+
 
     
 /*
@@ -87,50 +83,50 @@ Route::get('/appointments/{id}', [DoctorController::class, 'appointmentDetails']
 |--------------------------------------------------------------------------
 */
 
-// Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
-//     // Dashboard / home
-//     Route::get('/dashboard', function () {
-//         return view('patient_dashboard');
-//     })->name('dashboard');
+    // Dashboard / home
+    Route::get('/dashboard', function () {
+        return view('patient_dashboard');
+    })->name('dashboard');
 
-//     Route::get('/home', function () {
-//         return view('home');
-//     })->name('home');
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
 
-//     // Main app pages
-//     Route::get('/employees', function () {
-//         return view('employees');
-//     })->name('employees');
+    // Main app pages
+    Route::get('/employees', function () {
+        return view('employees');
+    })->name('employees');
 
-//     Route::get('/patients', function () {
-//         return view('patients');
-//     })->name('patients');
+    Route::get('/patients', function () {
+        return view('patients');
+    })->name('patients');
 
-//     Route::get('/doctor-appointments', function () {
-//         return view('doctor_appointments');
-//     })->name('doctor.appointments');
+    // Route::get('/doctor-appointments', function () {
+    //     return view('doctor_appointments');
+    // })->name('doctor.appointments');
 
-//     Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
-//     Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
+    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])->name('admin.report');
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
 
-//     Route::get('/patient_dashboard', function () {
-//         return view('patient_dashboard');
-//     })->name('patient.dashboard');
+    Route::get('/patient_dashboard', function () {
+        return view('patient_dashboard');
+    })->name('patient.dashboard');
 
-//     Route::get('/new-roster', function () {
-//         return view('new_roster');
-//     })->name('new.roster');
+    Route::get('/new-roster', function () {
+        return view('new_roster');
+    })->name('new.roster');
 
-//     Route::get('/roster', function () {
-//         return view('roster');
-//     })->name('roster');
+    Route::get('/roster', function () {
+        return view('roster');
+    })->name('roster');
 
-//     Route::get('/supervisor-roster', function () {
-//         return view('supervisor_roster');
-//     })->name('supervisor.roster');
+    Route::get('/supervisor-roster', function () {
+        return view('supervisor_roster');
+    })->name('supervisor.roster');
 
-
+});
 
     /*
     |--------------------------------------------------------------------------
