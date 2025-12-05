@@ -68,6 +68,10 @@ Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::clas
 */
 Route::middleware('guest')->group(function () {
 
+    Route::get('/home', function () {
+        return redirect()->route('home');
+    })->name('home');
+
     Route::get('/login', function () {
         return view('login');
     })->name('login');
@@ -87,18 +91,28 @@ Route::middleware('guest')->group(function () {
     })->name('family.member');
 
     // ADMIN / SUPERVISOR routes (change these to be in admin / supervisor section of routes once i know this is working)
-    Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
-        // Approval list + search
-        Route::get('/registration-approval', [RegistrationRequestController::class, 'index'])
-            ->name('registration.approval');
+    // Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+    //     // Approval list + search
+    //     Route::get('/registration-approval', [RegistrationRequestController::class, 'index'])
+    //         ->name('registration.approval');
 
-        // Approve / Deny actions
-        Route::post('/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
-            ->name('registration.approve');
+    //     // Approve / Deny actions
+    //     Route::post('/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
+    //         ->name('registration.approve');
 
-        Route::post('/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
-            ->name('registration.deny');
-    });
+    //     Route::post('/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
+    //         ->name('registration.deny');
+    // });
+
+    // PUBLIC – for testing
+    Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+        ->name('registration.approval');
+
+    Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+        ->name('registration.approve');
+
+    Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+        ->name('registration.deny');
 
 });
 
@@ -145,6 +159,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/family-dashboard', [FamilyDashboardController::class, 'index'])
             ->name('family.dashboard');
     });
+
+    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])
+        ->name('admin.report');
+
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
+    // (you can add ->name('admin.report.data') if you ever need to generate this URL)
+
+    Route::get('/patients', function () {
+        return view('patients');
+    })->name('patients');
 
     Route::post('/logout', function () {
         Auth::logout();
