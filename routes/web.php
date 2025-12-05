@@ -11,7 +11,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PatientDashboardController;
 use App\Http\Controllers\MedicineCheckController;
 use App\Http\Controllers\FamilyDashboardController;
-use App\Http\Controllers\DoctorHomeController;      // <— use this one
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\DoctorHomeController;
 use App\Http\Controllers\PrescriptionController;
 
 /*
@@ -59,6 +60,8 @@ Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestContro
 Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
     ->name('doctorHome');
 
+Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::class, 'appointmentDetails'])
+    ->name('appointment.details');
 /*
 |--------------------------------------------------------------------------
 | Guest routes (still public)
@@ -83,6 +86,21 @@ Route::middleware('guest')->group(function () {
     Route::get('/family-member', function () {
         return view('family_member');
     })->name('family.member');
+
+    // ADMIN / SUPERVISOR routes (change these to be in admin / supervisor section of routes once i know this is working)
+    Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+        // Approval list + search
+        Route::get('/registration-approval', [RegistrationRequestController::class, 'index'])
+            ->name('registration.approval');
+
+        // Approve / Deny actions
+        Route::post('/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
+            ->name('registration.approve');
+
+        Route::post('/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
+            ->name('registration.deny');
+    });
+
 });
 
 /*
@@ -97,10 +115,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         return view('patient_dashboard');
     })->name('dashboard');
-
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
 
     // Main app pages
     Route::get('/employees', function () {
