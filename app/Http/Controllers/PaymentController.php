@@ -9,16 +9,73 @@ use App\Models\Appointment;
 use App\Models\MedicineCheck;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    // Calculate static amounts per rules in your doc
+    // Static amounts per rules
     protected $rates = [
-        'per_day' => 10.00,
-        'appointment' => 50.00,
-        'medicine' => 5.00
+        'per_day'    => 10.00,
+        'appointment'=> 50.00,
+        'medicine'   => 5.00,
     ];
+
+    /* ----------------------------------------
+     * Helper: core calculation logic
+     * --------------------------------------*/
+    protected function buildSummaryForPatient(int $patientId): array
+    {
+        $patient = Patient::findOrFail($patientId);
+
+        // Adjust these field names if yours differ
+        $admission = $patient->admission_date
+            ? Carbon::parse($patient->admission_date)
+            : Carbon::today();
+
+        // If you have discharge_date, use it, otherwise bill up to today
+        $endDate = $patient->discharge_date
+            ? Carbon::parse($patient->discharge_date)
+            : Carbon::today();
+
+        // Number of days (inclusive)
+        $days = $admission->diffInDays($endDate) + 1;
+
+        // Appointments for this patient within stay window
+        $appointmentsCount = Appointment::where('patient_id', $patientId)
+            ->whereBetween('date', [$admission->toDateString(), $endDate->toDateString()])
+            ->count();
+
+        // Medicine doses: assumes medicine_checks has boolean/int columns morning/afternoon/night
+        $checks = MedicineCheck::where('patient_id', $patientId)
+            ->whereBetween('date', [$admission->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        $doseCount = $checks->sum(function ($row) {
+            return ($row->morning ? 1 : 0)
+                 + ($row->afternoon ? 1 : 0)
+                 + ($row->night ? 1 : 0);
+        });
+
+        $dailyCharge       = $days * $this->rates['per_day'];
+        $appointmentCharge = $appointmentsCount * $this->rates['appointment'];
+        $medicineCharge    = $doseCount * $this->rates['medicine'];
+
+        $total = $dailyCharge + $appointmentCharge + $medicineCharge;
+
+        return [
+            'patient'           => $patient,
+            'days'              => $days,
+            'dailyCharge'       => $dailyCharge,
+            'appointmentsCount' => $appointmentsCount,
+            'appointmentCharge' => $appointmentCharge,
+            'doseCount'         => $doseCount,
+            'medicineCharge'    => $medicineCharge,
+            'total'             => $total,
+        ];
+    }
+
+    /* ----------------------------------------
+     * API-ish endpoints (JSON)
+     * --------------------------------------*/
 
     public function index()
     {
@@ -27,40 +84,59 @@ class PaymentController extends Controller
 
     public function calculateForPatient($patientId)
     {
-        $patient = Patient::findOrFail($patientId);
-
-        // Here we do a naive calculation; refine as you need
-        $admission = $patient->admission_date ? Carbon::parse($patient->admission_date) : null;
-        $today = Carbon::today();
-
-        // days chargeable:
-        $days = $admission ? $admission->diffInDays($today) : 0;
-
-        $appointments = Appointment::where('patient_id',$patientId)->count();
-        $medicineCount = MedicineCheck::where('patient_id',$patientId)
-            ->whereDate('date', '<=', $today)->count(); // simple approach
-
-        $total = ($days * $this->rates['per_day']) + ($appointments * $this->rates['appointment']) + ($medicineCount * $this->rates['medicine']);
+        $summary = $this->buildSummaryForPatient((int) $patientId);
 
         return response()->json([
-            'patient_id' => $patientId,
-            'days' => $days,
-            'appointments' => $appointments,
-            'medicine_checks' => $medicineCount,
-            'total_due' => number_format($total, 2)
+            'patient_id'       => $summary['patient']->id,
+            'days'             => $summary['days'],
+            'appointments'     => $summary['appointmentsCount'],
+            'medicine_doses'   => $summary['doseCount'],
+            'total_due'        => number_format($summary['total'], 2),
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'amount' => 'required|numeric',
+            'patient_id'  => 'required|exists:patients,id',
+            'amount'      => 'required|numeric',
             'description' => 'nullable|string',
-            'paid_at' => 'nullable|date'
+            'paid_at'     => 'nullable|date'
         ]);
 
         $p = Payment::create($data);
+
         return response()->json($p, 201);
+    }
+
+    /* ----------------------------------------
+     * Payment page (Blade) endpoints
+     * --------------------------------------*/
+
+    // GET /payments - just show empty form
+    public function showForm()
+    {
+        return view('payments');
+    }
+
+    // POST /payments - form submit from your page
+    public function calculateFromForm(Request $request)
+    {
+        $validated = $request->validate([
+            'patient_id' => ['required', 'integer', 'exists:patients,id'],
+        ]);
+
+        $summary = $this->buildSummaryForPatient((int) $validated['patient_id']);
+
+        Payment::create([
+            'patient_id'  => $validated['patient_id'],
+            'amount'      => $summary['total'],
+            'description' => 'Automated billing calculation',
+            'paid_at'     => now(),
+        ]);
+
+
+        // Pass summary array to the Blade view
+        return view('payments', compact('summary'));
     }
 }
