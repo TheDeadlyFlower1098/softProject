@@ -35,7 +35,6 @@
       margin-bottom: 25px;
     }
 
-    /* main horizontal layout: left green box + right blue box */
     .content-row {
       display: flex;
       gap: 25px;
@@ -56,9 +55,11 @@
       width: 220px;
       background: #a7bddd; /* darker blue */
       border: 1px solid #6f7fa2;
+      padding: 20px;
+      color: #000;
+      font-size: 14px;
     }
 
-    /* form layout inside left panel */
     .patient-form {
       width: 100%;
       display: flex;
@@ -88,7 +89,6 @@
       background: #d6e6b7;
     }
 
-    /* ok / cancel buttons row */
     .button-row {
       align-self: center;
       display: flex;
@@ -104,10 +104,34 @@
       cursor: pointer;
     }
 
-    /* update button centered below */
     .update-row {
       align-self: center;
       margin-top: 10px;
+    }
+
+    .summary-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .summary-total {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .summary-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .summary-list li {
+      margin-bottom: 6px;
+    }
+
+    .error {
+      color: darkred;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -118,33 +142,53 @@
     <div class="content-row">
       <!-- Left green area -->
       <div class="left-panel">
-        <form class="patient-form">
+        <form class="patient-form" action="{{ route('payments.calculate') }}" method="POST">
+          @csrf
+
+          {{-- show validation error --}}
+          @error('patient_id')
+            <div class="error">{{ $message }}</div>
+          @enderror
+
           <div class="patient-row">
             <span class="patient-label">Patient ID</span>
-            <input class="patient-input" type="text" />
-          </div>
-          <div class="patient-row">
-            <span class="patient-label">Patient ID</span>
-            <input class="patient-input" type="text" />
-          </div>
-          <div class="patient-row">
-            <span class="patient-label">Patient ID</span>
-            <input class="patient-input" type="text" />
+            <input
+              class="patient-input"
+              type="number"
+              name="patient_id"
+              value="{{ old('patient_id') }}"
+              required
+            />
           </div>
 
           <div class="button-row">
-            <button type="button" class="btn">ok</button>
-            <button type="button" class="btn">cancel</button>
+            <button type="submit" class="btn">ok</button>
+            <button type="reset" class="btn">cancel</button>
           </div>
 
           <div class="update-row">
-            <button type="button" class="btn">update</button>
+            <button type="submit" class="btn">update</button>
           </div>
         </form>
       </div>
 
-      <!-- Right tall blue area -->
-      <div class="right-panel"></div>
+      <!-- Right tall blue area (summary) -->
+      <div class="right-panel">
+        @isset($summary)
+          <div class="summary-title">Total Due</div>
+          <div class="summary-total">${{ number_format($summary['total'], 2) }}</div>
+
+          <ul class="summary-list">
+            <li><strong>Patient:</strong> {{ $summary['patient']->id }} – {{ $summary['patient']->name ?? '' }}</li>
+            <li><strong>Days:</strong> {{ $summary['days'] }} × $10 = ${{ $summary['dailyCharge'] }}</li>
+            <li><strong>Appointments:</strong> {{ $summary['appointmentsCount'] }} × $50 = ${{ $summary['appointmentCharge'] }}</li>
+            <li><strong>Medicine doses:</strong> {{ $summary['doseCount'] }} × $5 = ${{ $summary['medicineCharge'] }}</li>
+            <li><strong>Payment type:</strong> Cash only (no taxes)</li>
+          </ul>
+        @else
+          <p>Enter a Patient ID on the left and press <strong>ok</strong> to calculate the total due.</p>
+        @endisset
+      </div>
     </div>
   </div>
 </body>

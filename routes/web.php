@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RegistrationApprovalController;
@@ -90,6 +91,10 @@ Route::middleware('guest')->group(function () {
         return view('family_member');
     })->name('family.member');
 
+    Route::get('/payments', function () {
+        return view('payments');
+    })->name('payments');
+
     // ADMIN / SUPERVISOR routes (change these to be in admin / supervisor section of routes once i know this is working)
     // Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
     //     // Approval list + search
@@ -169,6 +174,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/patients', function () {
         return view('patients');
     })->name('patients');
+
+    Route::get('/payments', [PaymentController::class, 'showForm'])
+        ->name('payments.form');
+
+    Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
+        ->name('payments.calculate');
+
 
     Route::post('/logout', function () {
         Auth::logout();
