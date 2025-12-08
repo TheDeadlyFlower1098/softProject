@@ -69,10 +69,6 @@ Route::get('/appointment/{id}', [App\Http\Controllers\DoctorHomeController::clas
 */
 Route::middleware('guest')->group(function () {
 
-    Route::get('/home', function () {
-        return redirect()->route('home');
-    })->name('home');
-
     Route::get('/login', function () {
         return view('login');
     })->name('login');
@@ -128,6 +124,10 @@ Route::middleware('guest')->group(function () {
 */
 
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
 
     // Dashboard / home
     Route::get('/dashboard', function () {

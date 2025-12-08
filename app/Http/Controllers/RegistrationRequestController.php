@@ -73,7 +73,7 @@ class RegistrationRequestController extends Controller
             'role'                      => $roleName, // store string
             'emergency_contact'         => $validated['emergency_contact'] ?? null,
             'relation_to_contact'       => $validated['relation_emergency_contact'] ?? null,
-            'linked_patient_identifier' => $linkedPatientId,
+            'linked_patient_identifier' => $linkedPatientId, // This might be causing the problem as only the family role will be provided this by the user.
             'approved'                  => false,
         ]);
 
