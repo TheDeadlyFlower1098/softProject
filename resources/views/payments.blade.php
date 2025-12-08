@@ -179,10 +179,10 @@
           <div class="summary-total">${{ number_format($summary['total'], 2) }}</div>
 
           <ul class="summary-list">
-            <li><strong>Patient:</strong> {{ $summary['patient']->id }} – {{ $summary['patient']->name ?? '' }}</li>
-            <li><strong>Days:</strong> {{ $summary['days'] }} × $10 = ${{ $summary['dailyCharge'] }}</li>
-            <li><strong>Appointments:</strong> {{ $summary['appointmentsCount'] }} × $50 = ${{ $summary['appointmentCharge'] }}</li>
-            <li><strong>Medicine doses:</strong> {{ $summary['doseCount'] }} × $5 = ${{ $summary['medicineCharge'] }}</li>
+            <li><strong>Patient:</strong> {{ $summary['patient']->id }} - {{ $summary['patient']->name ?? '' }}</li>
+            <li><strong>Days:</strong> {{ $summary['days'] }} x $10 = ${{ $summary['dailyCharge'] }}</li>
+            <li><strong>Appointments:</strong> {{ $summary['appointmentsCount'] }} x $50 = ${{ $summary['appointmentCharge'] }}</li>
+            <li><strong>Medicine doses:</strong> {{ $summary['doseCount'] }} x $5 = ${{ $summary['medicineCharge'] }}</li>
             <li><strong>Payment type:</strong> Cash only (no taxes)</li>
           </ul>
         @else
