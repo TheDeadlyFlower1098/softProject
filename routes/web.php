@@ -36,8 +36,9 @@ Route::get(
     [DoctorHomeController::class, 'appointmentDetails']
 )->name('appointment.details');
 
-// Doctor home route
+// Doctor home route (doctor only)
 Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+    ->middleware(['auth', 'role:Doctor'])
     ->name('doctorHome');
 
 /*
@@ -53,6 +54,7 @@ Route::get('/', function () {
 
 // Data viewer
 Route::get('/dataviewer', [DataViewerController::class, 'index']);
+
 /*
 |--------------------------------------------------------------------------
 | Guest routes (not logged in)
@@ -80,7 +82,7 @@ Route::middleware('guest')->group(function () {
         return view('login');
     })->name('login');
 
-    // Signup page
+    // Signup page (uses welcome with signup form)
     Route::get('/signup', function () {
         return view('welcome');
     })->name('signup');
@@ -92,7 +94,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
 
-    // (optional) public-only pages
+    // (optional) public-only page example
     Route::get('/family-member', function () {
         return view('family_member');
     })->name('family.member');
@@ -110,28 +112,62 @@ Route::middleware('auth')->group(function () {
         return view('home');
     })->name('home');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Patient dashboards
+    |--------------------------------------------------------------------------
+    */
     // Patient dashboard (used as "Patient Home")
     Route::get('/dashboard', [PatientDashboardController::class, 'index'])
+        ->middleware('role:Patient')
         ->name('dashboard');
 
     // Alternative patient dashboard route (if needed elsewhere)
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
+        ->middleware('role:Patient')
         ->name('patient.dashboard');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Patients and additional information (Admin/Supervisor/Doctor/Caregiver)
+    |--------------------------------------------------------------------------
+    */
     // Patients list (points to patientsList.blade.php)
     Route::get('/patients', function () {
         return view('patientsList');
-    })->name('patients');
+    })->middleware('role:Admin,Supervisor,Doctor,Caregiver')
+      ->name('patients');
 
-    // Employees page
-    Route::get('/employees', function () {
-        return view('employees');
-    })->name('employees');
+    // Additional patient information page (Admin & Supervisor only)
+    Route::get('/patients/additional', function () {
+        return view('patientAdditional');
+    })->middleware('role:Admin,Supervisor')
+      ->name('patients.additional');
 
-    // Doctor appointments page
+    /*
+    |--------------------------------------------------------------------------
+    | Employees (Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/employees', [EmployeeController::class, 'index'])
+        ->middleware('role:Admin,Supervisor')
+        ->name('employees');
+
+    Route::get('/employees/filter', [EmployeeController::class, 'filtered'])
+        ->middleware('role:Admin,Supervisor');
+
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])
+        ->middleware('role:Admin,Supervisor');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Doctor appointments (created by Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
     Route::get('/doctor-appointments', function () {
         return view('doctor_appointments');
-    })->name('doctor.appointments');
+    })->middleware('role:Admin,Supervisor')
+      ->name('doctor.appointments');
 
     /*
     |--------------------------------------------------------------------------
@@ -175,24 +211,27 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Admin report
+    | Admin report (Admin & Supervisor)
     |--------------------------------------------------------------------------
     */
     Route::get('/admin-report', [ReportController::class, 'viewReportPage'])
+        ->middleware('role:Admin,Supervisor')
         ->name('admin.report');
 
-    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
-    // (add ->name('admin.report.data') later if you need a named route)
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities'])
+        ->middleware('role:Admin,Supervisor');
 
     /*
     |--------------------------------------------------------------------------
-    | Payments
+    | Payments (Admin only)
     |--------------------------------------------------------------------------
     */
     Route::get('/payments', [PaymentController::class, 'showForm'])
+        ->middleware('role:Admin')
         ->name('payments');
 
     Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
+        ->middleware('role:Admin')
         ->name('payments.calculate');
 
     Route::post('/payments/pay', [PaymentController::class, 'makePayment'])
@@ -209,13 +248,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/roster', [RosterController::class, 'dashboard'])
         ->name('roster.dashboard');
 
-    // New roster form (controller will check Admin / Supervisor role)
+    // New roster form (Admin / Supervisor)
     Route::get('/roster/new', [RosterController::class, 'create'])
+        ->middleware('role:Admin,Supervisor')
         ->name('roster.new');
 
     // Save roster (create / update)
     Route::post('/roster', [RosterController::class, 'store'])
+        ->middleware('role:Admin,Supervisor')
         ->name('roster.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Roles page (Admin only)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/roles', function () {
+        return view('roles');
+    })->middleware('role:Admin')
+      ->name('roles.index');
 
     /*
     |--------------------------------------------------------------------------
@@ -234,22 +285,25 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin / Supervisor routes
+| Admin / Supervisor routes for Registration Approval
 |--------------------------------------------------------------------------
 */
-// Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
-//     // main approval page
-//     Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
-//         ->name('registration.approval');
+Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+    Route::get(
+        '/registration-approval',
+        [RegistrationApprovalController::class, 'index']
+    )->name('registration.approval');
 
-//     // approve a specific request
-//     Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
-//         ->name('registration.approve');
+    Route::post(
+        '/registration-approval/{id}/approve',
+        [RegistrationApprovalController::class, 'approve']
+    )->name('registration.approve');
 
-//     // deny a specific request
-//     Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
-//         ->name('registration.deny');
-// });
+    Route::post(
+        '/registration-approval/{id}/deny',
+        [RegistrationApprovalController::class, 'deny']
+    )->name('registration.deny');
+});
 
 /*
 |--------------------------------------------------------------------------

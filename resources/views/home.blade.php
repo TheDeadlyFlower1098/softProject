@@ -9,103 +9,131 @@
 
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background-color: rgb(182, 215, 168);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        font-family: 'Playfair Display', serif;
+        background-color: rgb(182, 215, 168);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
 
-        /* ------------------------------ */
-        /* TOP NAVIGATION (TAN BAR)       */
-        /* ------------------------------ */
-        nav {
-            width: 100%;
-            background-color: #f1eebf;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
+    /* ------------------------------ */
+    /* TOP NAVIGATION (TAN BAR)       */
+    /* ------------------------------ */
+    nav {
+        width: 100%;
+        background-color: #f1eebf;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10;
+    }
 
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem; 
+        width: 100%; 
+        margin: 0; 
+        box-sizing: border-box;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        color: #20548b;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 3rem;
+        white-space: nowrap;
+    }
+
+    .logo-img {
+        width: 70px;
+        height: 70px;
+        margin: 0 6px;
+        transition: transform 0.3s, filter 0.3s;
+    }
+
+    .logo-img:hover {
+        transform: rotate(20deg);
+        filter: drop-shadow(0 0 6px #ffd700);
+    }
+
+    /* NAV LINKS ROW */
+    .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;        /* smaller gap so more buttons fit */
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        flex-wrap: nowrap;  /* keep all buttons on one line */
+    }
+
+    .nav-links li {
+        flex: 0 0 auto;
+    }
+
+    .nav-links li a {
+        padding: 0.5rem 1.1rem;
+        background-color: #2b6cb0;
+        color: #f1f2f4;
+        font-weight: 600;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        transition: background-color .2s, transform .2s;
+    }
+
+    .nav-links li a:hover {
+        background-color: #6fa6e0;
+        transform: translateY(-2px);
+    }
+
+    /* Make logout button match nav buttons */
+    .nav-links form {
+        margin: 0;
+    }
+
+    .nav-links form button {
+        padding: 0.5rem 1.1rem;
+        background-color: #2b6cb0;
+        color: #f1f2f4;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        transition: background-color .2s, transform .2s;
+    }
+
+    .nav-links form button:hover {
+        background-color: #6fa6e0;
+        transform: translateY(-2px);
+    }
+
+    /* Slightly compress things on narrower screens before wrapping */
+    @media (max-width: 1200px) {
         .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 2rem;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 0.8rem 1.5rem;
         }
-
         .logo {
-            display: flex;
-            align-items: center;
-            color: #20548b;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 3rem;
+            font-size: 2.4rem;
         }
-
-        .logo-img {
-            width: 70px;
-            height: 70px;
-            margin: 0 6px;
-            transition: transform 0.3s, filter 0.3s;
-        }
-
-        .logo-img:hover {
-            transform: rotate(20deg);
-            filter: drop-shadow(0 0 6px #ffd700);
-        }
-
-        /* Top nav links */
-        nav {
-            width: 100%;
-            background-color: #f1eebf;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-
-        /* This keeps the logo in place AND gives room for the nav links */
-        .nav-container {
-            display: flex;
-            justify-content: space-between;  
-            align-items: center;
-            padding: 1.2rem 3rem;     
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* The nav UL should look like a row of buttons */
         .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;                  
-            list-style: none;
-            margin: 0;
-            padding: 0;
+            gap: 0.4rem;
         }
-
-        /* Each nav button */
-        .nav-links li a {
-            padding: 0.6rem 1.4rem;
-            background-color: #2b6cb0;
-            color: #f1f2f4;
-            font-weight: 600;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: background-color .2s, transform .2s;
+        .nav-links li a,
+        .nav-links form button {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.85rem;
         }
-
-        .nav-links li a:hover {
-            background-color: #6fa6e0;
-            transform: translateY(-2px);
-        }
+    }
 
         /* ------------------------------ */
         /* MAIN CONTENT                   */
