@@ -17,6 +17,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\DataViewerController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\RolesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -267,6 +268,11 @@ Route::middleware('auth')->group(function () {
         return view('roles');
     })->middleware('role:Admin')
       ->name('roles.index');
+
+    Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
+    Route::post('/roles', [RolesController::class, 'store'])->name('roles.store');
+    Route::patch('/roles/users/{user}', [RolesController::class, 'updateUserRole'])
+        ->name('roles.users.update');
 
     /*
     |--------------------------------------------------------------------------
