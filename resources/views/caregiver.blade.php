@@ -4,108 +4,106 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Caregiver Dashboard</title>
+
   <style>
-    :root {
-      --bg: #0f1724;
-      --muted: #9aa7bd;
-      --accent: #6ee7b7;
-    }
+  :root {
+    --bg: #0f1724;
+    --muted: #9aa7bd;
+    --accent: #6ee7b7;
+    --card-bg: rgba(255,255,255,0.05);
+    --button-bg: #4ade80;
+    --button-hover: #22c55e;
+  }
 
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui;
-      background: rgba(84, 128, 170, 1);
-      color: #e6eef8;
-    }
+  body {
+    margin: 0;
+    font-family: Inter, Arial, sans-serif;
+    background: #5466aa;
+    color: #e6eef8;
+  }
 
-    .app {
-      display: flex;
-      min-height: 100vh;
-      padding: 24px;
-      gap: 24px;
-    }
+  .app {
+    display: flex;
+    min-height: 100vh;
+    gap: 24px;
+    padding: 24px;
+  }
 
-    .sidebar {
-      width: 260px;
-      background: rgb(111, 168, 220);
-      border-radius: 12px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+  .sidebar {
+    width: 260px;
+    background: rgb(111, 168, 220);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
 
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      color: #fff;
-    }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo-img { width:50px; height:50px; border-radius:10px; }
 
-    .caregiver-box {
-      width: 90%;
-      margin: 20px auto;
-      background: rgb(182, 215, 168);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.12);
-    }
+  .nav { display:flex; flex-direction:column; gap:6px; margin-top:20px; }
+  .nav a {
+    padding:10px;
+    color: rgb(182, 215, 168);
+    text-decoration:none;
+    border-radius:8px;
+    background: rgba(74,113,150,1);
+    border: 2px solid rgb(182,215,168);
+  }
 
-    .caregiver-box h2 {
-      margin-top: 0;
-      text-align: center;
-      color: rgb(60, 120, 216);
-    }
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 16px;
-      text-align: center;
-    }
+  .caregiver-box {
+    width: 90%;
+    margin: 20px auto;
+    background: rgb(182, 215, 168);
+    padding: 20px;
+    border-radius: 10px;
+  }
 
-    th, td {
-      padding: 10px;
-      border: 1px solid rgba(0,0,0,0.2);
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    color: black;
+  }
 
-    select {
-      padding: 4px;
-      border-radius: 6px;
-      border: none;
-    }
+  th, td {
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
 
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #6ee7b7;
-      color: #022;
-      border-radius: 8px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-    }
+  th { background-color: rgb(182,215,168); }
 
-    @media (max-width: 900px) {
-      .sidebar { display: none; }
-      .app { padding: 14px; }
-    }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #6ee7b7;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
   </style>
 </head>
+
 <body>
   <div class="app">
+
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="logo">
-          <img src="images/sun.png" alt="Logo" style="width:70px; height:70px;">
-        </div>
-        <div>
-          <h1>Caregiver</h1>
-        </div>
+        <img src="images/sun.png" alt="Logo" class="logo-img">
+        <h1>Caregiver</h1>
       </div>
+
       <nav class="nav">
         <a href="#">Dashboard</a>
         <a href="#">Patients</a>
@@ -113,107 +111,54 @@
       </nav>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="main-content">
-      <div class="caregiver-box">
-        <h2>Patient Daily Medication & Meals</h2>
-        <form action="#" method="POST">
-          <table>
-            <thead>
-              <tr>
-                <th>Medication / Meal</th>
-                <th>Morning</th>
-                <th>Afternoon</th>
-                <th>Night</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Medications -->
-              <tr>
-                <td>Medication A</td>
-                <td>
-                  <select name="medA_morning">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-                <td>
-                  <select name="medA_afternoon">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-                <td>
-                  <select name="medA_night">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-              </tr>
+      <h2>Patients</h2>
 
-              <tr>
-                <td>Medication B</td>
-                <td>
-                  <select name="medB_morning">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-                <td>
-                  <select name="medB_afternoon">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-                <td>
-                  <select name="medB_night">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-              </tr>
+      <!-- ✅ Correct Form -->
+      <form action="{{ route('caregiver.saveToday') }}" method="POST">
+        @csrf
 
-              <!-- Meals -->
-              <tr>
-                <td>Breakfast</td>
-                <td>
-                  <select name="breakfast_morning">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-                <td>-</td>
-                <td>-</td>
-              </tr>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Morning Medicine</th>
+              <th>Afternoon Medicine</th>
+              <th>Night Medicine</th>
+              <th>Breakfast</th>
+              <th>Lunch</th>
+              <th>Dinner</th>
+            </tr>
+          </thead>
 
+          <tbody>
+            @foreach ($patients as $patient)
               <tr>
-                <td>Lunch</td>
-                <td>-</td>
                 <td>
-                  <select name="lunch_afternoon">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
+                  {{ $patient->user->first_name }} {{ $patient->user->last_name }}
+                  <input type="hidden" name="patients[{{ $patient->id }}][patient_id]" value="{{ $patient->id }}">
                 </td>
-                <td>-</td>
-              </tr>
 
-              <tr>
-                <td>Dinner</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                  <select name="dinner_night">
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                <!-- Medicine -->
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][morning]" value="1"></td>
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][afternoon]" value="1"></td>
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][night]" value="1"></td>
 
-          <button type="submit">Save Daily Report</button>
-        </form>
-      </div>
+                <!-- Meals -->
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][breakfast]" value="1"></td>
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][lunch]" value="1"></td>
+                <td><input type="checkbox" name="patients[{{ $patient->id }}][dinner]" value="1"></td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+
+        <button type="submit" class="ok-button">OK</button>
+        <button type="reset" class="cancel-button">Cancel</button>
+
+      </form>
+
     </main>
   </div>
 </body>
