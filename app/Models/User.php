@@ -51,9 +51,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    /**
-     * Helper: normalized role name (lowercase) or null.
-     */
     public function roleName(): ?string
     {
         // Prefer roles table, fall back to a string column if you ever had one
@@ -75,5 +72,16 @@ class User extends Authenticatable
     public function hasRole(array $names): bool
     {
         return in_array($this->roleName(), $names, true);
+    }
+
+    // if user is a patient:
+    public function familyMember()
+    {
+        return $this->hasOne(\App\Models\FamilyMember::class);
+    }
+
+    public function patient()
+    {
+        return $this->hasOne(\App\Models\Patient::class);
     }
 }

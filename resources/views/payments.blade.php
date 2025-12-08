@@ -26,6 +26,7 @@
       justify-content: center;
       align-items: flex-start;
       background: #ffffff;
+      color: black;
     }
 
     .page {
@@ -39,6 +40,7 @@
     .title {
       font-size: 48px;
       margin-bottom: 25px;
+      color: black;
     }
 
     .content-row {
@@ -151,20 +153,37 @@
         <form class="patient-form" action="{{ route('payments.calculate') }}" method="POST">
           @csrf
 
-          {{-- show validation error --}}
-          @error('patient_id')
-            <div class="error">{{ $message }}</div>
-          @enderror
+          @php
+            $hasAutoPatient = isset($patient) && $patient;
+          @endphp
+
+          @unless($hasAutoPatient)
+            @error('patient_id')
+              <div class="error">{{ $message }}</div>
+            @enderror
+          @endunless
 
           <div class="patient-row">
-            <span class="patient-label">Patient ID</span>
-            <input
-              class="patient-input"
-              type="number"
-              name="patient_id"
-              value="{{ old('patient_id') }}"
-              required
-            />
+            @if($hasAutoPatient)
+              {{-- Family or Patient user: auto-resolved patient --}}
+              <span class="patient-label">Patient</span>
+              <input
+                class="patient-input"
+                type="text"
+                value="{{ $patient->patient_name }} (ID: {{ $patient->id }})"
+                readonly
+              />
+            @else
+              {{-- Admin / other roles: manual ID entry --}}
+              <span class="patient-label">Patient ID</span>
+              <input
+                class="patient-input"
+                type="text"
+                name="patient_id"
+                value="{{ old('patient_id') }}"
+                required
+              />
+            @endif
           </div>
 
           <div class="button-row">
@@ -178,21 +197,75 @@
         </form>
       </div>
 
-      <!-- Right tall blue area (summary) -->
+            <!-- Right tall blue area (summary) -->
       <div class="right-panel">
+        @if(session('success'))
+          <div class="flash-box flash-success" style="margin-bottom:10px;">
+            {{ session('success') }}
+          </div>
+        @endif
+
         @isset($summary)
           <div class="summary-title">Total Due</div>
-          <div class="summary-total">${{ number_format($summary['total'], 2) }}</div>
+          <div class="summary-total">
+            ${{ number_format($summary['remaining'], 2) }}
+          </div>
 
           <ul class="summary-list">
-            <li><strong>Patient:</strong> {{ $summary['patient']->id }} - {{ $summary['patient']->name ?? '' }}</li>
+            <li>
+              <strong>Patient:</strong>
+              {{ $summary['patient']->id }} - {{ $summary['patient']->patient_name ?? '' }}
+            </li>
+            <li><strong>Original charges:</strong> ${{ number_format($summary['total'], 2) }}</li>
+            <li><strong>Paid so far:</strong> ${{ number_format($summary['totalPaid'], 2) }}</li>
+            <li><strong>Remaining:</strong> ${{ number_format($summary['remaining'], 2) }}</li>
             <li><strong>Days:</strong> {{ $summary['days'] }} x $10 = ${{ $summary['dailyCharge'] }}</li>
             <li><strong>Appointments:</strong> {{ $summary['appointmentsCount'] }} x $50 = ${{ $summary['appointmentCharge'] }}</li>
             <li><strong>Medicine doses:</strong> {{ $summary['doseCount'] }} x $5 = ${{ $summary['medicineCharge'] }}</li>
             <li><strong>Payment type:</strong> Cash only (no taxes)</li>
           </ul>
+
+          <hr style="margin:12px 0;">
+
+          {{-- Payment form --}}
+          <form action="{{ route('payments.pay') }}" method="POST">
+            @csrf
+            {{-- For Admin: keep patient_id; for Family/Patient it will be overridden in controller --}}
+            <input type="hidden" name="patient_id" value="{{ $summary['patient']->id }}">
+
+            <label for="payment_amount"><strong>Make a payment:</strong></label><br>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              name="payment_amount"
+              id="payment_amount"
+              class="patient-input"
+              style="width: 120px; margin: 6px 0;"
+              required
+            />
+
+            @error('payment_amount')
+              <div class="error">{{ $message }}</div>
+            @enderror
+
+            <button type="submit" class="btn" style="margin-top: 4px;">Pay</button>
+          </form>
         @else
-          <p>Enter a Patient ID on the left and press <strong>ok</strong> to calculate the total due.</p>
+          @php
+            $hasAutoPatient = isset($patient) && $patient;
+          @endphp
+
+          @if($hasAutoPatient)
+            <p>
+              Press <strong>ok</strong> to calculate the total due for
+              <strong>{{ $patient->patient_name }}</strong>.
+            </p>
+          @else
+            <p>
+              Enter a Patient ID on the left and press <strong>ok</strong> to calculate the total due.
+            </p>
+          @endif
         @endisset
       </div>
     </div>

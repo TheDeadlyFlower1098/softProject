@@ -62,6 +62,21 @@ Route::get('/dataviewer', [DataViewerController::class, 'index']);
 */
 Route::middleware('guest')->group(function () {
 
+    Route::get('/registration-approval', function() {
+        return view('registration_approval');
+    });
+
+    Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+        ->name('registration.approval');
+
+    // approve a specific request
+    Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+        ->name('registration.approve');
+
+    // deny a specific request
+    Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+        ->name('registration.deny');
+
     // Login page
     Route::get('/login', function () {
         return view('login');
@@ -218,6 +233,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
         ->middleware('role:Admin')
         ->name('payments.calculate');
+
+    Route::post('/payments/pay', [PaymentController::class, 'makePayment'])
+        ->name('payments.pay');
+
 
     /*
     |--------------------------------------------------------------------------
