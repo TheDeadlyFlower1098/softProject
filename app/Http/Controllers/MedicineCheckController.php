@@ -16,15 +16,18 @@ class MedicineCheckController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'caregiver_id' => 'required|exists:users,id',
-            'patient_id' => 'required|exists:patients,id',
-            'date' => 'required|date',
-            'morning' => 'boolean',
-            'afternoon' => 'boolean',
-            'night' => 'boolean'
+            'patient_id'   => ['required', 'exists:patients,id'],
+            'date'         => ['required', 'date'],
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
 
         $check = MedicineCheck::create($data);
+
         return response()->json($check, 201);
     }
 
@@ -36,12 +39,20 @@ class MedicineCheckController extends Controller
     public function update(Request $request, $id)
     {
         $check = MedicineCheck::findOrFail($id);
+
         $data = $request->validate([
-            'morning' => 'boolean',
-            'afternoon' => 'boolean',
-            'night' => 'boolean'
+            'patient_id'   => ['required', 'exists:patients,id'],
+            'date'         => ['required', 'date'],
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
+
         $check->update($data);
+
         return response()->json($check);
     }
 
@@ -50,33 +61,40 @@ class MedicineCheckController extends Controller
         $user = auth()->user();
         $patient = $user->patient;   // requires User::patient() relationship
 
-        if (!$patient) {
+        if (! $patient) {
             abort(403, 'No patient record linked to this user.');
         }
 
-        // Only booleans for checkboxes; they can be missing if unchecked
-        $request->validate([
-            'morning'   => 'nullable|boolean',
-            'afternoon' => 'nullable|boolean',
-            'night'     => 'nullable|boolean',
+        // We only care about the status fields here; patient/date come from context.
+        $data = $request->validate([
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
 
-        // Create or update today's record for this patient
+        // Create or update today's record for this patient.
+        // All status fields are stored as 'taken' / 'missed' / null (for unknown).
         $check = MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
                 'date'       => today(),
             ],
-            [
-                // You can decide what caregiver_id should be:
-                // - current user
-                // - or null if this is self-reported
-                'caregiver_id' => $user->id,
-
-                'morning'   => $request->boolean('morning'),
-                'afternoon' => $request->boolean('afternoon'),
-                'night'     => $request->boolean('night'),
-            ]
+            array_merge(
+                [
+                    'caregiver_id' => auth()->id(),
+                ],
+                [
+                    'morning'   => $data['morning']   ?? null,
+                    'afternoon' => $data['afternoon'] ?? null,
+                    'night'     => $data['night']     ?? null,
+                    'breakfast' => $data['breakfast'] ?? null,
+                    'lunch'     => $data['lunch']     ?? null,
+                    'dinner'    => $data['dinner']    ?? null,
+                ]
+            )
         );
 
         return back()->with('success', 'Medicine checklist saved.');

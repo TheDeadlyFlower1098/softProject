@@ -189,25 +189,26 @@
 
                                     {{-- YES = approve --}}
                                     <form action="{{ route('registration.approve', $req->id) }}"
-                                          method="POST">
+                                        method="POST"
+                                        onsubmit="return confirm('Are you sure you want to APPROVE this registration?');">
                                         @csrf
-                                        <button type="button"
+                                        <button type="submit"
                                                 class="pending-btn"
-                                                title="Approve"
-                                                onclick="confirmApprove(this.form)">
+                                                title="Approve">
                                         </button>
                                     </form>
 
                                     {{-- NO = deny --}}
                                     <form action="{{ route('registration.deny', $req->id) }}"
-                                          method="POST">
+                                        method="POST"
+                                        onsubmit="return confirm('Are you sure you want to DENY and DELETE this registration?');">
                                         @csrf
-                                        <button type="button"
+                                        <button type="submit"
                                                 class="pending-btn"
-                                                title="Deny"
-                                                onclick="confirmDeny(this.form)">
+                                                title="Deny">
                                         </button>
                                     </form>
+
 
                                 </div>
                             </td>
