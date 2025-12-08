@@ -106,7 +106,7 @@
 <body>
   <div class="app">
 
-    {{-- Sidebar --}}
+    {{-- Sidebar (used on all non-home pages) --}}
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="logo">
@@ -119,41 +119,17 @@
       </div>
 
       <nav class="nav">
-        {{-- These are wired to REAL routes you already have --}}
-
-        <a href="{{ route('registration.approval') }}"
-           class="{{ request()->routeIs('registration.approval') ? 'active' : '' }}">
-            Approve Requests
-        </a>
-
-        <a href="{{ route('patients') }}"
-           class="{{ request()->routeIs('patients') ? 'active' : '' }}">
-            Patient Info
-        </a>
-
-        <a href="{{ route('admin.report') }}"
-           class="{{ request()->routeIs('admin.report') ? 'active' : '' }}">
-            Admin Reports
-        </a>
-
-        <a href="{{ route('home') }}"
-           class="{{ request()->routeIs('home') ? 'active' : '' }}">
-            Home
-        </a>
-
-        <a href="{{ route('dashboard') }}"
-           class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            Dashboard
-        </a>
+          @auth
+              @include('partials.nav-links', ['layout' => 'sidebar'])
+          @endauth
       </nav>
+
     </aside>
 
     {{-- Main Content --}}
     <main class="main-content"
           style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; color:#fff;">
-      
       @yield('content')
-
     </main>
 
   </div>

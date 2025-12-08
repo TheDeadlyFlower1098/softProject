@@ -1,4 +1,9 @@
-<!-- index.html -->
+@extends('layouts.app')
+
+@section('title', 'Family Member')
+
+@section('content')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

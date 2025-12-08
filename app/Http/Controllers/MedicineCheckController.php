@@ -48,9 +48,14 @@ class MedicineCheckController extends Controller
         $check = MedicineCheck::findOrFail($id);
 
         $data = $request->validate([
-            'morning'   => 'boolean',
-            'afternoon' => 'boolean',
-            'night'     => 'boolean',
+            'patient_id'   => ['required', 'exists:patients,id'],
+            'date'         => ['required', 'date'],
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
 
         $check->update($data);
@@ -76,25 +81,36 @@ class MedicineCheckController extends Controller
             abort(403, 'No patient record linked to this user.');
         }
 
-        // Only booleans for checkboxes; unchecked ones are missing
-        $request->validate([
-            'morning'   => 'nullable|boolean',
-            'afternoon' => 'nullable|boolean',
-            'night'     => 'nullable|boolean',
+        // We only care about the status fields here; patient/date come from context.
+        $data = $request->validate([
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
 
-        MedicineCheck::updateOrCreate(
+        // Create or update today's record for this patient.
+        // All status fields are stored as 'taken' / 'missed' / null (for unknown).
+        $check = MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
                 'date'       => today(),
             ],
-            [
-                // in your previous version this was the logged-in user
-                'caregiver_id' => $user->id,
-                'morning'      => $request->boolean('morning'),
-                'afternoon'    => $request->boolean('afternoon'),
-                'night'        => $request->boolean('night'),
-            ]
+            array_merge(
+                [
+                    'caregiver_id' => auth()->id(),
+                ],
+                [
+                    'morning'   => $data['morning']   ?? null,
+                    'afternoon' => $data['afternoon'] ?? null,
+                    'night'     => $data['night']     ?? null,
+                    'breakfast' => $data['breakfast'] ?? null,
+                    'lunch'     => $data['lunch']     ?? null,
+                    'dinner'    => $data['dinner']    ?? null,
+                ]
+            )
         );
 
         return redirect()

@@ -8,9 +8,15 @@ use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Employee::paginate(20));
+        // If this is an AJAX / JSON request, return the data
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(Employee::paginate(20));
+        }
+
+        // Otherwise, return the Blade view for /employees
+        return view('employees');
     }
 
     public function store(Request $request)
@@ -54,8 +60,6 @@ class EmployeeController extends Controller
 
     public function filtered(Request $request)
     {
-        \Log::info("FILTER REQUEST", $request->all());
-
         try {
             $q = Employee::query();
 

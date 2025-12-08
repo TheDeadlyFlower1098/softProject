@@ -1,301 +1,264 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Employee</title>
+@extends('layouts.app')
 
+@section('title', 'Employee')
+
+@section('content')
 <style>
-:root{
-  --blue-100:#d9e9fb;
-  --blue-300:#9ec1e6;
-  --green-200:#b9d7a9;
-  --green-500:#7cab5f;
-}
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  background:white;
-}
+    :root{
+        --blue-100:#d9e9fb;
+        --blue-300:#9ec1e6;
+        --blue-600:#2563eb;
+        --green-200:#b9d7a9;
+        --green-500:#7cab5f;
+        --ink:#111827;
+    }
 
-/* ============================================================
-   PAGE LAYOUT
-   ============================================================ */
-.layout{
-  width:1400px;
-  max-width:98vw;
-  margin:16px auto;
-  background:var(--blue-100);
-  border:3px solid #c7d3e2;
-  border-radius:6px;
-  padding:18px;
-  display:flex;
-  gap:26px;
-  align-items:flex-start;
-}
+    *{ box-sizing:border-box; }
 
-/* Main left area */
-.left{
-  flex:1 1 auto;
-  min-width:800px;
-}
+    /* OUTER LAYOUT – matches other screens */
+    .layout{
+        width:92%;
+        max-width:1400px;
+        margin:16px auto 32px;
+        background:var(--blue-100);
+        border:2px solid #c7d3e2;
+        border-radius:8px;
+        padding:20px;
+        display:flex;
+        gap:26px;
+        align-items:flex-start;
+    }
 
-/* Titles */
-.title{
-  font-size:42px;
-  font-weight:700;
-  margin:6px 0 15px 6px;
-}
-.subtitle{
-  font-size:20px;
-  font-weight:600;
-  margin:4px 0 12px 6px;
-}
+    .left{
+        flex:1 1 auto;
+        min-width:0;
+    }
 
-/* Inputs & Buttons */
-.field-group{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-.field-input{
-  height:32px;
-  width:180px;
-  border:2px solid #6c8bb5;
-  border-radius:4px;
-  background:#cfe1f6;
-  padding:4px 8px;
-  font-size:15px;
-}
+    .title{
+        font-size:34px;
+        font-weight:700;
+        margin:0 0 14px 4px;
+        color:var(--ink);
+    }
 
-.btn{
-  background-color:var(--green-500);
-  border:2.5px solid #578640;
-  border-radius:4px;
-  padding:6px 14px;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
-}
-.btn:hover{
-  filter:brightness(1.05);
-}
+    /* GREEN CARD (table area) */
+    .card{
+        margin:6px 4px 0;
+        background:var(--green-200);
+        border:2px solid #739966;
+        border-radius:8px;
+        padding:20px 22px;
+        min-height:70vh;
+        display:flex;
+        flex-direction:column;
+        gap:14px;
+        overflow:hidden;
+    }
 
-/* ============================================================
-   GREEN CARD - MAIN TABLE AREA
-   ============================================================ */
-.card{
-  margin:10px 6px 0;
-  background:var(--green-200);
-  border:3px solid #739966;
-  border-radius:6px;
-  padding:24px;
-  min-height:70vh;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-  overflow:hidden;
-}
+    /* FILTER BAR */
+    .filter-bar{
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        justify-content:center;
+        margin-bottom:6px;
+    }
 
-/* ============================================================
-   FILTER BAR
-   ============================================================ */
-.filter-bar{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  justify-content:center;
-  margin-bottom:4px;
-}
-.filter-bar .field-input{
-  width:160px;
-}
+    .field-input{
+        height:32px;
+        width:170px;
+        border:2px solid #6c8bb5;
+        border-radius:4px;
+        background:#cfe1f6;
+        padding:4px 8px;
+        font-size:14px;
+    }
+    .filter-bar .field-input{ width:150px; }
 
-/* ============================================================
-   TABLE GRID SYSTEM
-   ============================================================ */
-.grid-row{
-  display:grid;
-  grid-template-columns:
-      80px   /* ID */
-      3fr    /* Name */
-      1fr    /* Role */
-      140px  /* Salary */
-      140px; /* Action */
-  gap:18px;
-  width:100%;
-  align-items:center;
-}
+    .btn{
+        background-color:var(--green-500);
+        border:2px solid #578640;
+        border-radius:4px;
+        padding:6px 14px;
+        font-size:15px;
+        font-weight:600;
+        cursor:pointer;
+        color:#000;
+    }
+    .btn:hover{
+        filter:brightness(1.05);
+    }
 
-/* Header cells */
-.header-cell{
-  background:#cfe1f6;
-  border:3px solid #7f93ac;
-  border-radius:4px;
-  padding:10px;
-  font-weight:600;
-  text-align:center;
-}
+    /* TABLE GRID */
+    .grid-row{
+        display:grid;
+        grid-template-columns:
+            80px   /* ID */
+            3fr    /* Name */
+            1fr    /* Role */
+            140px  /* Salary */
+            140px; /* Action */
+        gap:16px;
+        width:100%;
+        align-items:center;
+    }
 
-/* Table rows */
-.table-row{
-  width:100%;
-}
-.table-cell{
-  background:white;
-  border:2px solid #7f93ac;
-  border-radius:4px;
-  padding:10px;
-  text-align:center;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+    .header-cell{
+        background:#b7cce6;
+        border:2px solid #7f93ac;
+        border-radius:4px;
+        padding:8px 10px;
+        font-weight:600;
+        text-align:center;
+        color:#0f172a;
+    }
 
-/* Scrollable employee list */
-#employeeTable{
-  max-height:60vh;
-  overflow-y:auto;
-  padding-right:6px;
-}
+    .table-row{ width:100%; }
 
-/* ============================================================
-   RIGHT SIDEBAR (Admin Dashboard)
-   ============================================================ */
-.rail{
-  flex:0 0 240px;
-  background:var(--blue-300);
-  border:3px solid #7ea4c9;
-  border-radius:6px;
-  padding:18px;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-}
-.rail p{
-  font-size:26px;
-  font-weight:700;
-  margin:0;
-}
+    .table-cell{
+        background:#fff;
+        border:2px solid #7f93ac;
+        border-radius:4px;
+        padding:8px 10px;
+        text-align:center;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        font-size:14px;
+        color:#111827;
+    }
 
-/* ============================================================
-   RESPONSIVE BEHAVIOR
-   ============================================================ */
-@media (max-width:1100px){
-  .layout{
-    flex-direction:column;
-    width:100%;
-  }
-  .left{
-    min-width:100%;
-  }
-}
+    #employeeTable{
+        max-height:60vh;
+        overflow-y:auto;
+        padding-right:6px;
+    }
 
-@media (max-width:820px){
-  .grid-row{
-    grid-template-columns:
-        60px
-        2fr
-        1fr
-        100px
-        100px;
-    gap:12px;
-  }
-}
+    /* RIGHT SIDEBAR */
+    .rail{
+        flex:0 0 260px;
+        background:var(--blue-300);
+        border:2px solid #7ea4c9;
+        border-radius:8px;
+        padding:18px;
+        display:flex;
+        justify-content:center;
+        align-items:flex-start;
+    }
 
-@media (max-width:520px){
-  /* Convert to stacked cards */
-  .grid-row{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  .header-cell{
-    display:none;
-  }
-  .table-row{
-    background:white;
-    border:2px solid #7f93ac;
-    border-radius:6px;
-    padding:12px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .table-cell{
-    text-align:left;
-    white-space:normal;
-  }
-}
+    .rail p{
+        font-size:22px;
+        font-weight:700;
+        color:#0f172a;
+        margin:0;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width:1100px){
+        .layout{
+            flex-direction:column;
+            width:95%;
+        }
+    }
+
+    @media (max-width:820px){
+        .grid-row{
+            grid-template-columns:
+                60px
+                2fr
+                1fr
+                110px
+                110px;
+            gap:10px;
+        }
+    }
+
+    @media (max-width:520px){
+        .layout{ padding:16px; }
+        .grid-row{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+        .header-cell{ display:none; }
+        .table-row{
+            background:#fff;
+            border:2px solid #7f93ac;
+            border-radius:6px;
+            padding:10px;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+        .table-cell{
+            text-align:left;
+            white-space:normal;
+        }
+    }
 </style>
-</head>
 
-<body>
 <div class="layout">
 
-  <section class="left">
+    <section class="left">
+        <h1 class="title">Employee</h1>
 
-    <h1 class="title">Employee</h1>
+        @php
+          $isAdmin = auth()->check() &&
+               strtolower(auth()->user()->role->name) === 'admin';
 
-    @php
-      $isAdmin = auth()->check() &&
-           strtolower(auth()->user()->role->name) === 'admin';
+          $isSupervisor = auth()->check() &&
+                    strtolower(auth()->user()->role->name) === 'supervisor';
+        @endphp
 
-      $isSupervisor = auth()->check() &&
-                strtolower(auth()->user()->role->name) === 'supervisor';
+        <div class="card">
 
-    @endphp
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <input id="filterId" placeholder="ID" class="field-input">
+                <input id="filterName" placeholder="Name" class="field-input">
+                <input id="filterRole" placeholder="Role" class="field-input">
+                <input id="filterMinSalary" placeholder="Min Salary" class="field-input">
+                <input id="filterMaxSalary" placeholder="Max Salary" class="field-input">
 
-    <div class="card">
+                <button id="filterBtn" class="btn">Filter</button>
+                <button id="resetBtn" class="btn">Reset</button>
+            </div>
 
-      <!-- FILTER BAR -->
-      <div class="filter-bar">
-        <input id="filterId" placeholder="ID" class="field-input">
-        <input id="filterName" placeholder="Name" class="field-input">
-        <input id="filterRole" placeholder="Role" class="field-input">
-        <input id="filterMinSalary" placeholder="Min Salary" class="field-input">
-        <input id="filterMaxSalary" placeholder="Max Salary" class="field-input">
+            <!-- TABLE HEADER -->
+            <div class="grid-row">
+                <div class="header-cell">ID</div>
+                <div class="header-cell">Name</div>
+                <div class="header-cell">Role</div>
+                <div class="header-cell">Salary</div>
+                <div class="header-cell">Action</div>
+            </div>
 
-        <button id="filterBtn" class="btn">Filter</button>
-        <button id="resetBtn" class="btn">Reset</button>
-      </div>
+            <!-- TABLE BODY -->
+            <div id="employeeTable"></div>
 
-      <!-- TABLE HEADER -->
-      <div class="grid-row">
-        <div class="header-cell">ID</div>
-        <div class="header-cell">Name</div>
-        <div class="header-cell">Role</div>
-        <div class="header-cell">Salary</div>
-        <div class="header-cell">Action</div>
-      </div>
+        </div>
+    </section>
 
-      <!-- TABLE BODY -->
-      <div id="employeeTable"></div>
-
-    </div>
-  </section>
-
-  <aside class="rail">
-    <p>Admin Dashboard</p>
-  </aside>
+    <aside class="rail">
+        <p>Admin dashboard</p>
+    </aside>
 
 </div>
 
 <script>
-// Escape text for safety
+// Escape text for safety (unchanged)
 function escapeHtml(text){
-  if(text === null || text === undefined) return '';
+  if (text === null || text === undefined) return '';
   return String(text).replace(/[&<>"'`=\/]/g, s => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#x60;','=':'&#x3D;','/':'&#x2F;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+    '`':'&#x60;','=':'&#x3D;','/':'&#x2F;'
   }[s]));
 }
 
-// Render employee rows
+// Render employee rows (unchanged)
 function renderEmployees(list){
   const container = document.getElementById("employeeTable");
-  if(!list.length){
+  if (!list.length){
     container.innerHTML = "<div style='padding:14px;'>No employees found.</div>";
     return;
   }
@@ -324,11 +287,30 @@ function renderEmployees(list){
 
 // Load employees
 function loadEmployees(){
-  fetch('/api/employees')
-    .then(r=>r.json())
-    .then(r=>renderEmployees(r.data ?? []));
+  fetch('/employees', {
+      headers: { 'Accept': 'application/json' }
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error('Network error ' + response.status);
+      }
+      return response.json();
+  })
+  .then(payload => {
+      const list = Array.isArray(payload.data) ? payload.data : [];
+      renderEmployees(list);
+  })
+  .catch(err => {
+      console.error('Error loading employees:', err);
+      const container = document.getElementById("employeeTable");
+      if (container) {
+        container.innerHTML =
+          "<div style='padding:14px;'>Error loading employees.</div>";
+      }
+  });
 }
-loadEmployees();
+
+document.addEventListener('DOMContentLoaded', loadEmployees);
 
 // FILTERING
 document.getElementById("filterBtn").onclick = function(){
@@ -387,8 +369,5 @@ function editSalary(){
     alert("Only admins can modify salaries.");
 }
 @endif
-
 </script>
-
-</body>
-</html>
+@endsection
