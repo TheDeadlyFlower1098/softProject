@@ -53,29 +53,27 @@ Route::get('/', function () {
 
 // Data viewer
 Route::get('/dataviewer', [DataViewerController::class, 'index']);
-
-// Admin approval page + actions (for registration requests)
-Route::get(
-    '/admin/registration-approval',
-    [RegistrationRequestController::class, 'index']
-)->name('registration.approval');
-
-Route::post(
-    '/admin/registration-approval/{id}/approve',
-    [RegistrationRequestController::class, 'approve']
-)->name('registration.approve');
-
-Route::post(
-    '/admin/registration-approval/{id}/deny',
-    [RegistrationRequestController::class, 'deny']
-)->name('registration.deny');
-
 /*
 |--------------------------------------------------------------------------
 | Guest routes (not logged in)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
+
+    Route::get('/registration-approval', function() {
+        return view('registration_approval');
+    });
+
+    Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+        ->name('registration.approval');
+
+    // approve a specific request
+    Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+        ->name('registration.approve');
+
+    // deny a specific request
+    Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+        ->name('registration.deny');
 
     // Login page
     Route::get('/login', function () {
@@ -197,6 +195,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
         ->name('payments.calculate');
 
+    Route::post('/payments/pay', [PaymentController::class, 'makePayment'])
+        ->name('payments.pay');
+
+
     /*
     |--------------------------------------------------------------------------
     | Roster routes
@@ -235,10 +237,19 @@ Route::middleware('auth')->group(function () {
 | Admin / Supervisor routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
-    Route::get('/admin/registrations', [RegistrationApprovalController::class, 'index'])
-        ->name('admin.registrations');
-});
+// Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+//     // main approval page
+//     Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+//         ->name('registration.approval');
+
+//     // approve a specific request
+//     Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+//         ->name('registration.approve');
+
+//     // deny a specific request
+//     Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+//         ->name('registration.deny');
+// });
 
 /*
 |--------------------------------------------------------------------------

@@ -33,7 +33,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-<<<<<<< HEAD
     public function roleName(): ?string
     {
         // Prefer roles table, fall back to string column if you have one
@@ -49,13 +48,11 @@ class User extends Authenticatable
     }
 
     // if user is a patient:
-=======
     public function familyMember()
     {
         return $this->hasOne(\App\Models\FamilyMember::class);
     }
 
->>>>>>> 4e99c75f6d8cb09be8208a042936e43cf94e4058
     public function patient()
     {
         return $this->hasOne(\App\Models\Patient::class);
