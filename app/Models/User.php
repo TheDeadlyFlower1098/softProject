@@ -2,42 +2,78 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
-        'first_name','last_name','email','password',
-        'phone','dob','role_id','approved','family_code'
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'role_id',
+        'phone',
+        'dob',
+        'approved',
+        'family_code',
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     */
     protected $hidden = [
-        'password','remember_token',
+        'password',
+        'remember_token',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'dob' => 'date',
-        'approved' => 'boolean'
+        'dob'               => 'date',
+        'approved'          => 'boolean',
     ];
 
+    /**
+     * Relationship: each user belongs to one role.
+     */
     public function role()
     {
         return $this->belongsTo(Role::class);
     }
 
-    public function familyMember()
+    /**
+     * Helper: normalized role name (lowercase) or null.
+     */
+    public function roleName(): ?string
     {
-        return $this->hasOne(\App\Models\FamilyMember::class);
+        // Prefer roles table, fall back to a string column if you ever had one
+        $fromRelation = optional($this->role)->name;
+        $fromColumn   = property_exists($this, 'role')
+            ? $this->role
+            : null;
+
+        return $fromRelation
+            ? strtolower($fromRelation)
+            : ($fromColumn ? strtolower($fromColumn) : null);
     }
 
-    public function patient()
+    /**
+     * Helper: check if user has any of the given roles.
+     *
+     * Example: $user->hasRole(['admin', 'supervisor'])
+     */
+    public function hasRole(array $names): bool
     {
-        return $this->hasOne(\App\Models\Patient::class);
+        return in_array($this->roleName(), $names, true);
     }
 }

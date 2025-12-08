@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\ReportController;
@@ -13,6 +14,9 @@ use App\Http\Controllers\MedicineCheckController;
 use App\Http\Controllers\FamilyDashboardController;
 use App\Http\Controllers\DoctorHomeController;
 use App\Http\Controllers\PrescriptionController;
+use App\Http\Controllers\RosterController;
+use App\Http\Controllers\DataViewerController;
+use App\Http\Controllers\DoctorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,28 +24,30 @@ use App\Http\Controllers\PrescriptionController;
 |--------------------------------------------------------------------------
 */
 
-Route::post('/appointments/{appointment}/prescriptions',
-    [PrescriptionController::class, 'store'])
-    ->name('appointments.prescriptions.store');
+Route::post(
+    '/appointments/{appointment}/prescriptions',
+    [PrescriptionController::class, 'store']
+)->name('appointments.prescriptions.store');
 
-Route::get('/appointments/{id}/details',
-    [DoctorHomeController::class, 'appointmentDetails'])
-    ->name('appointment.details');
+Route::get(
+    '/appointments/{id}/details',
+    [DoctorHomeController::class, 'appointmentDetails']
+)->name('appointment.details');
 
 
 /*
 |--------------------------------------------------------------------------
-| Medicine Check Routes (Auth Required)
+| Medicine Check Routes (Requires Auth)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth'])->group(function () {
 
     // Patient dashboard
-    Route::get('/patient_dashboard',
-        [PatientDashboardController::class, 'index'])
+    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
         ->name('patient.dashboard');
 
-    // Patient saves their own medicine check
+    // Patient saves single record
     Route::post('/patient_dashboard/medicine-check',
         [MedicineCheckController::class, 'saveSingle'])
         ->name('medicinecheck.saveSingle');
@@ -60,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Public routes
+| Public Routes
 |--------------------------------------------------------------------------
 */
 
@@ -68,7 +74,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
+Route::get('/dataviewer', [DataViewerController::class, 'index']);
 
 Route::get('/admin/registration-approval',
     [RegistrationRequestController::class, 'index'])
@@ -89,62 +95,63 @@ Route::get('/doctorHome',
 
 /*
 |--------------------------------------------------------------------------
-| Guest (not logged in)
+| Guest Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
 
-    Route::get('/login', fn () => view('login'))->name('login');
-    Route::get('/signup', fn () => view('welcome'))->name('signup');
+    Route::get('/login', fn() => view('login'))
+        ->name('login');
 
-    Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
+    Route::get('/signup', fn() => view('welcome'))
+        ->name('signup');
+
+    Route::post('/login_attempt',
+        [LoginAuthController::class, 'attempt'])
         ->name('login_attempt');
 
-    Route::post('/signup', [RegistrationRequestController::class, 'store'])
+    Route::post('/signup',
+        [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
 
-    Route::get('/family-member', fn () => view('family_member'))
+    Route::get('/family-member', fn() => view('family_member'))
         ->name('family.member');
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated
+| Authenticated Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', fn () => view('patient_dashboard'))
+    Route::get('/dashboard', fn() => view('patient_dashboard'))
         ->name('dashboard');
 
-    Route::get('/home', fn () => view('home'))
+    Route::get('/home', fn() => view('home'))
         ->name('home');
 
-    Route::get('/employees', fn () => view('employees'))
+    Route::get('/employees', fn() => view('employees'))
         ->name('employees');
 
-    Route::post('/medicine-check', [MedicineCheckController::class, 'store'])
-        ->name('medicinecheck.store');
-
-    Route::get('/doctor-appointments', fn () => view('doctor_appointments'))
+    Route::get('/doctor-appointments', fn() => view('doctor_appointments'))
         ->name('doctor.appointments');
 
-    Route::get('/new-roster', fn () => view('new_roster'))
+    Route::get('/new-roster', fn() => view('new_roster'))
         ->name('new.roster');
 
-    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
-        ->name('patient.dashboard');
-
-    Route::get('/supervisor-roster', fn () => view('supervisor_roster'))
+    Route::get('/supervisor-roster', fn() => view('supervisor_roster'))
         ->name('supervisor.roster');
 
+    // Family dashboard (role restricted)
     Route::middleware(['role:Family'])->group(function () {
         Route::get('/family-dashboard',
             [FamilyDashboardController::class, 'index'])
             ->name('family.dashboard');
     });
 
+    // Logout
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -166,4 +173,9 @@ Route::middleware('role:Admin,Supervisor')->group(function () {
 });
 
 
-require __DIR__ . '/auth.php';
+/*
+|--------------------------------------------------------------------------
+| Laravel Breeze / Fortify / Auth Scaffolding
+|--------------------------------------------------------------------------
+*/
+require __DIR__.'/auth.php';
