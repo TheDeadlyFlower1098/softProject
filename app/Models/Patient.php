@@ -33,9 +33,18 @@ class Patient extends Model
         return $this->hasMany(Appointment::class);
     }
 
-        public function medicineChecks()
+    public function medicineChecks()
     {
-        return $this->hasMany(\App\Models\MedicineCheck::class);
+        return $this->hasMany(MedicineCheck::class);
+    }
+
+    public function medicineCheckForDate($date = null)
+    {
+        $date = $date ?? now()->toDateString();
+
+        return $this->medicineChecks()
+            ->forDate($date)
+            ->first();
     }
 
     public function familyMembers()

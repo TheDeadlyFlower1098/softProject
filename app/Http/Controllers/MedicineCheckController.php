@@ -65,18 +65,19 @@ class MedicineCheckController extends Controller
             abort(403, 'No patient record linked to this user.');
         }
 
-        // We only care about the status fields here; patient/date come from context.
-        $data = $request->validate([
-            'morning'      => ['nullable', 'in:taken,missed'],
-            'afternoon'    => ['nullable', 'in:taken,missed'],
-            'night'        => ['nullable', 'in:taken,missed'],
-            'breakfast'    => ['nullable', 'in:taken,missed'],
-            'lunch'        => ['nullable', 'in:taken,missed'],
-            'dinner'       => ['nullable', 'in:taken,missed'],
-        ]);
+        // We don’t really need patient_id / date from the form, we derive them:
+        // if you still send them, you can keep a simple validate, but it's optional.
+        // $request->validate([...]) could be removed or simplified.
 
-        // Create or update today's record for this patient.
-        // All status fields are stored as 'taken' / 'missed' / null (for unknown).
+        // Map each checkbox -> 'taken' or 'missed'
+        $slots = ['morning', 'afternoon', 'night', 'breakfast', 'lunch', 'dinner'];
+
+        $values = [];
+        foreach ($slots as $slot) {
+            // if checkbox is present => taken, else missed (or null if you prefer "unknown")
+            $values[$slot] = $request->has($slot) ? 'taken' : 'missed';
+        }
+
         $check = MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
@@ -84,16 +85,10 @@ class MedicineCheckController extends Controller
             ],
             array_merge(
                 [
-                    'caregiver_id' => auth()->id(),
+                    // if you have an Employee relation, use employee id, otherwise user id is fine
+                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
                 ],
-                [
-                    'morning'   => $data['morning']   ?? null,
-                    'afternoon' => $data['afternoon'] ?? null,
-                    'night'     => $data['night']     ?? null,
-                    'breakfast' => $data['breakfast'] ?? null,
-                    'lunch'     => $data['lunch']     ?? null,
-                    'dinner'    => $data['dinner']    ?? null,
-                ]
+                $values
             )
         );
 
