@@ -84,4 +84,22 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\Patient::class);
     }
+
+    public function role_page_role()
+    {
+        return $this->belongsTo(\App\Models\Role::class);
+    }
+
+    // Convenience: $user->roleName()
+    public function role_page_roleName(): ?string
+    {
+        return optional($this->role)->name;
+    }
+
+    // Convenience: $user->accessLevel()
+    public function accessLevel(): int
+    {
+        return optional($this->role)->access_level ?? 0;
+    }
+
 }
