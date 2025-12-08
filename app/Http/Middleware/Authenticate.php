@@ -13,4 +13,19 @@ class Authenticate extends Middleware
         return $request->expectsJson() ? null : route('login');
 
     }
+
+        public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function roleName(): ?string
+    {
+        return optional($this->role)->name;
+    }
+
+    public function hasRole(array $names): bool
+    {
+        return in_array($this->roleName(), $names, true);
+    }
 }

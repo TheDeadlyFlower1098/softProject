@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Role;
+
 
 class User extends Authenticatable
 {
@@ -29,6 +31,20 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function roleName(): ?string
+    {
+        // Prefer roles table, fall back to string column if you have one
+        $fromRelation = optional($this->role)->name;
+        $fromColumn   = property_exists($this, 'role') ? $this->role : null;
+
+        return $fromRelation ? strtolower($fromRelation) : ($fromColumn ? strtolower($fromColumn) : null);
+    }
+
+    public function hasRole(array $names): bool
+    {
+        return in_array($this->roleName(), $names, true);
     }
 
     // if user is a patient:
