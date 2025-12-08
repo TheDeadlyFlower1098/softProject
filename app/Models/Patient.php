@@ -38,4 +38,8 @@ class Patient extends Model
         return $this->hasMany(\App\Models\MedicineCheck::class);
     }
 
+    public function familyMembers()
+    {
+        return $this->hasMany(\App\Models\FamilyMember::class);
+    }
 }

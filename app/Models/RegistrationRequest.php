@@ -22,6 +22,7 @@ class RegistrationRequest extends Model
         'processed_by',
         'emergency_contact',
         'relation_to_contact',
+        'linked_patient_identifier',
     ];
 
 

@@ -119,29 +119,46 @@ body {
 
     <!-- Top area: inputs + buttons -->
     <div class="top-row">
+
       <!-- Left: input fields -->
       <div class="fields">
         <div class="field-row">
           <label class="field-label" for="familyCode">Family code</label>
-          <input class="field-input" id="familyCode" type="text" />
+          <input class="field-input" id="familyCode" type="text"
+                 value="{{ $familyLink->family_code ?? '' }}" readonly />
         </div>
 
         <div class="field-row">
           <label class="field-label" for="patientId">Patient ID</label>
-          <input class="field-input" id="patientId" type="text" />
+          <input class="field-input" id="patientId" type="text"
+                 value="{{ $patient->patient_identifier }}" readonly />
         </div>
       </div>
 
       <!-- Right: buttons -->
       <div class="buttons">
-        <button class="btn">ok</button>
-        <button class="btn">cancel</button>
+        <button class="btn" onclick="window.location.reload()">ok</button>
+        <button class="btn" onclick="history.back()">cancel</button>
       </div>
+
     </div>
 
-    <!-- Bottom big box -->
+    <!-- Bottom big box: PATIENT DATA GOES HERE -->
     <div class="patient-box">
-      <span class="patient-label">Patient details</span>
+        <div>
+            <h2 class="patient-label">Patient Details</h2>
+
+            <p><strong>Name:</strong> {{ $patient->patient_name }}</p>
+            <p><strong>Patient ID:</strong> {{ $patient->patient_identifier }}</p>
+            <p><strong>Admission Date:</strong> {{ $patient->admission_date }}</p>
+            <p><strong>Group:</strong> {{ optional($patient->group)->name ?? 'N/A' }}</p>
+
+            <br>
+
+            <h3>Your Relationship</h3>
+            <p><strong>Relation:</strong> {{ $familyLink->relation ?? 'N/A' }}</p>
+            <p><strong>Family Code:</strong> {{ $familyLink->family_code ?? 'N/A' }}</p>
+        </div>
     </div>
   </div>
 </body>

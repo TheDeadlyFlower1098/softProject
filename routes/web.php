@@ -16,6 +16,7 @@ use App\Http\Controllers\DoctorHomeController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\DataViewerController;
+use App\Http\Controllers\DoctorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,8 +31,10 @@ Route::post(
 )->name('appointments.prescriptions.store');
 
 // view a single appointment's details
-Route::get('/appointments/{id}/details', [DoctorHomeController::class, 'appointmentDetails'])
-    ->name('appointment.details');
+Route::get(
+    '/appointments/{id}/details',
+    [DoctorHomeController::class, 'appointmentDetails']
+)->name('appointment.details');
 
 // Doctor home route
 Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
@@ -52,14 +55,20 @@ Route::get('/', function () {
 Route::get('/dataviewer', [DataViewerController::class, 'index']);
 
 // Admin approval page + actions (for registration requests)
-Route::get('/admin/registration-approval', [RegistrationRequestController::class, 'index'])
-    ->name('registration.approval');
+Route::get(
+    '/admin/registration-approval',
+    [RegistrationRequestController::class, 'index']
+)->name('registration.approval');
 
-Route::post('/admin/registration-approval/{id}/approve', [RegistrationRequestController::class, 'approve'])
-    ->name('registration.approve');
+Route::post(
+    '/admin/registration-approval/{id}/approve',
+    [RegistrationRequestController::class, 'approve']
+)->name('registration.approve');
 
-Route::post('/admin/registration-approval/{id}/deny', [RegistrationRequestController::class, 'deny'])
-    ->name('registration.deny');
+Route::post(
+    '/admin/registration-approval/{id}/deny',
+    [RegistrationRequestController::class, 'deny']
+)->name('registration.deny');
 
 /*
 |--------------------------------------------------------------------------
@@ -84,6 +93,11 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
+
+    // (optional) public-only pages
+    Route::get('/family-member', function () {
+        return view('family_member');
+    })->name('family.member');
 });
 
 /*
@@ -106,7 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
         ->name('patient.dashboard');
 
-    // Patients list
+    // Patients list (points to patientsList.blade.php)
     Route::get('/patients', function () {
         return view('patientsList');
     })->name('patients');
@@ -121,17 +135,33 @@ Route::middleware('auth')->group(function () {
         return view('doctor_appointments');
     })->name('doctor.appointments');
 
-    // Medicine check routes
-    Route::post('/patient_dashboard/medicine-check', [MedicineCheckController::class, 'saveForTodayFromDashboard'])
-        ->name('medicinecheck.saveToday');
+    /*
+    |--------------------------------------------------------------------------
+    | Medicine check routes
+    |--------------------------------------------------------------------------
+    */
+    Route::post(
+        '/patient_dashboard/medicine-check',
+        [MedicineCheckController::class, 'saveForTodayFromDashboard']
+    )->name('medicinecheck.saveToday');
 
-    Route::post('/medicine-check', [MedicineCheckController::class, 'store'])
-        ->name('medicinecheck.store');
+    Route::post(
+        '/medicine-check',
+        [MedicineCheckController::class, 'store']
+    )->name('medicinecheck.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Family & Caregiver dashboards
+    |--------------------------------------------------------------------------
+    */
 
     // Family dashboard (only Family role)
     Route::middleware('role:Family')->group(function () {
-        Route::get('/family-dashboard', [FamilyDashboardController::class, 'index'])
-            ->name('family.home');
+        Route::get(
+            '/family-dashboard',
+            [FamilyDashboardController::class, 'index']
+        )->name('family.home');
     });
 
     // Caregiver dashboard
@@ -145,14 +175,22 @@ Route::middleware('auth')->group(function () {
         return view('caregiver_dashboard');
     })->name('caregiver.home');
 
-    // Admin report
+    /*
+    |--------------------------------------------------------------------------
+    | Admin report
+    |--------------------------------------------------------------------------
+    */
     Route::get('/admin-report', [ReportController::class, 'viewReportPage'])
         ->name('admin.report');
 
     Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
     // (add ->name('admin.report.data') later if you need a named route)
 
-    // Payments (shown in nav only for Admin)
+    /*
+    |--------------------------------------------------------------------------
+    | Payments
+    |--------------------------------------------------------------------------
+    */
     Route::get('/payments', [PaymentController::class, 'showForm'])
         ->name('payments');
 
@@ -194,7 +232,7 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin / Supervisor routes (extra, if you need them)
+| Admin / Supervisor routes
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
@@ -207,4 +245,4 @@ Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
 | Auth scaffolding routes (Laravel default)
 |--------------------------------------------------------------------------
 */
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

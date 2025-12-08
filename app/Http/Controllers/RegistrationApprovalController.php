@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Patient;
+use App\Models\FamilyMember;
 
 class RegistrationApprovalController extends Controller
 {
@@ -73,6 +75,26 @@ class RegistrationApprovalController extends Controller
                 'admission_date' => now(),
                 'family_code' => $req->family_code ?? strtoupper('FC' . rand(100,999)),
             ]);
+        }
+
+        // NEW: link family member to patient based on signup ID
+        if ($req->role === 'Family') {
+
+            // 1. Find the patient based on what they typed at signup
+            $patient = Patient::where('patient_identifier', $req->linked_patient_identifier)
+                ->orWhere('id', $req->linked_patient_identifier)
+                ->first();
+
+            if ($patient) {
+                FamilyMember::create([
+                    'user_id'    => $user->id,
+                    'patient_id' => $patient->id,
+                    // you don’t currently capture this on signup, so:
+                    'relation'   => null, // or 'Unknown', or add a field to the form later
+                    // keep family_code in sync with the patient’s family_code
+                    'family_code'=> $patient->family_code,
+                ]);
+            }
         }
 
         return redirect()
