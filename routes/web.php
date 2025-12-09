@@ -29,10 +29,19 @@ Route::post(
     [PrescriptionController::class, 'store']
 )->name('appointments.prescriptions.store');
 
+Route::get('/appointments/{id}/details',
+    [DoctorHomeController::class, 'appointmentDetails'])
+    ->name('appointment.details');
+// view a single appointment's details
 Route::get(
     '/appointments/{id}/details',
     [DoctorHomeController::class, 'appointmentDetails']
 )->name('appointment.details');
+
+// Doctor home route (doctor only)
+Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+    ->middleware(['auth', 'role:Doctor'])
+    ->name('doctorHome');
 
 
 /*
@@ -73,7 +82,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::get('/dataviewer', [DataViewerController::class, 'index']);
+Route::get('/dataviewer', [\App\Http\Controllers\DataViewerController::class, 'index']);
 
 Route::get('/admin/registration-approval',
     [RegistrationRequestController::class, 'index'])
@@ -90,39 +99,91 @@ Route::post('/admin/registration-approval/{id}/deny',
 Route::get('/doctorHome',
     [DoctorHomeController::class, 'index'])
     ->name('doctorHome');
+// Data viewer
+Route::get('/dataviewer', [DataViewerController::class, 'index']);
 
 
 /*
 |--------------------------------------------------------------------------
-| Guest Routes
+| Guest routes (not logged in)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
 
-    Route::get('/login', fn() => view('login'))
-        ->name('login');
+    // Login page
+    Route::get('/login', function () {
+        return view('login');
+    })->name('login');
 
-    Route::get('/signup', fn() => view('welcome'))
-        ->name('signup');
+    // Signup page (uses welcome with signup form)
+    Route::get('/signup', function () {
+        return view('welcome');
+    })->name('signup');
 
-    Route::post('/login_attempt',
-        [LoginAuthController::class, 'attempt'])
+    // Handle login / signup
+    Route::post('/login_attempt', [LoginAuthController::class, 'attempt'])
         ->name('login_attempt');
 
     Route::post('/signup',
         [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
 
-    Route::get('/family-member', fn() => view('family_member'))
-        ->name('family.member');
+    // (optional) public-only page example
+    Route::get('/family-member', function () {
+        return view('family_member');
+    })->name('family.member');
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes
+<<<<<<<<< Temporary merge branch 1
+| Authenticated routes (logged in)
 |--------------------------------------------------------------------------
 */
+Route::middleware('auth')->group(function () {
+
+    // Home page for logged-in users
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
+
+    // Patient dashboard (used as "Patient Home")
+    Route::get('/dashboard', [PatientDashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // Alternative patient dashboard route (if needed elsewhere)
+    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
+        ->name('patient.dashboard');
+
+    // Patients list (points to patientsList.blade.php)
+    Route::get('/patients', function () {
+        return view('patientsList');
+    })->name('patients');
+
+    // Employees page
+    Route::get('/employees', function () {
+        return view('employees');
+    })->name('employees');
+
+    // Doctor appointments page
+    Route::get('/doctor-appointments', function () {
+        return view('doctor_appointments');
+    })->name('doctor.appointments');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Medicine check routes
+    |--------------------------------------------------------------------------
+    */
+    Route::post(
+        '/patient_dashboard/medicine-check',
+        [MedicineCheckController::class, 'saveForTodayFromDashboard']
+    )->name('medicinecheck.saveToday');
+    })
+
+
+
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', fn() => view('patient_dashboard'))
@@ -137,6 +198,88 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/doctor-appointments', fn() => view('doctor_appointments'))
         ->name('doctor.appointments');
 
+    Route::get('/new-roster', fn () => view('new_roster'))
+        ->name('new.roster');
+
+})
+Route::middleware('auth')->group(function () {
+
+    // Home page for logged-in users
+    Route::get('/home', function () {
+        return view('home');
+    })->name('home');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Patient dashboards
+    |--------------------------------------------------------------------------
+    */
+    // Patient dashboard (used as "Patient Home")
+    Route::get('/dashboard', [PatientDashboardController::class, 'index'])
+        ->middleware('role:Patient')
+        ->name('dashboard');
+
+    // Alternative patient dashboard route (if needed elsewhere)
+    Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
+        ->middleware('role:Patient')
+        ->name('patient.dashboard');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Patients and additional information (Admin/Supervisor/Doctor/Caregiver)
+    |--------------------------------------------------------------------------
+    */
+    // Patients list (points to patientsList.blade.php)
+    Route::get('/patients', function () {
+        return view('patientsList');
+    })->middleware('role:Admin,Supervisor,Doctor,Caregiver')
+      ->name('patients');
+
+    // Additional patient information page (Admin & Supervisor only)
+    Route::get('/patients/additional', function () {
+        return view('patientAdditional');
+    })->middleware('role:Admin,Supervisor')
+      ->name('patients.additional');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Employees (Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/employees', [EmployeeController::class, 'index'])
+        ->middleware('role:Admin,Supervisor')
+        ->name('employees');
+
+    Route::get('/employees/filter', [EmployeeController::class, 'filtered'])
+        ->middleware('role:Admin,Supervisor');
+
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])
+        ->middleware('role:Admin,Supervisor');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Doctor appointments (created by Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/doctor-appointments', function () {
+        return view('doctor_appointments');
+    })->middleware('role:Admin,Supervisor')
+      ->name('doctor.appointments');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Medicine check routes
+    |--------------------------------------------------------------------------
+    */
+    Route::post(
+        '/patient_dashboard/medicine-check',
+        [MedicineCheckController::class, 'saveForTodayFromDashboard']
+    )->name('medicinecheck.saveToday');
+
+    Route::post(
+        '/medicine-check',
+        [MedicineCheckController::class, 'store']
+    )->name('medicinecheck.store');
 
     /*
     |--------------------------------------------------------------------------
@@ -144,36 +287,70 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Roster dashboard (nav: route('roster.dashboard'))
-    Route::get('/roster', function () {
-        return view('supervisor_roster'); // or your actual roster view
-    })->name('roster.dashboard');
+    // Family dashboard (only Family role)
+    Route::middleware('role:Family')->group(function () {
+        Route::get(
+            '/family-dashboard',
+            [FamilyDashboardController::class, 'index']
+        )->name('family.home');
+    });
 
-    // New roster page (nav: route('roster.new'))
-    Route::get('/roster/new', function () {
-        return view('new_roster');
-    })->name('roster.new');
+    // Caregiver dashboard
+    Route::get('/caregiver-dashboard', function () {
+        $user = auth()->user();
 
-    // Keep legacy routes (safe but optional)
-    Route::get('/new-roster', fn() => view('new_roster'))
-        ->name('new.roster');
+        if (! $user || $user->role->name !== 'Caregiver') {
+            abort(403);
+        }
 
-    Route::get('/supervisor-roster', fn() => view('supervisor_roster'))
-        ->name('supervisor.roster');
-
+        return view('caregiver_dashboard');
+    })->name('caregiver.home');
 
     /*
     |--------------------------------------------------------------------------
-    | Family Dashboard (Role Restricted)
+    | Admin report
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:Family'])->group(function () {
-        Route::get('/family-dashboard',
-            [FamilyDashboardController::class, 'index'])
-            ->name('family.dashboard');
-    });
+    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])
+        ->name('admin.report');
 
-    // Logout
+    Route::get('/admin-report/data', [ReportController::class, 'missedActivities']);
+    // (add ->name('admin.report.data') later if you need a named route)
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payments
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/payments', [PaymentController::class, 'showForm'])
+        ->name('payments');
+
+    Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
+        ->name('payments.calculate');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Roster routes
+    |--------------------------------------------------------------------------
+    */
+
+    // Everyone logged in can view the roster dashboard
+    Route::get('/roster', [RosterController::class, 'dashboard'])
+        ->name('roster.dashboard');
+
+    // New roster form (controller will check Admin / Supervisor role)
+    Route::get('/roster/new', [RosterController::class, 'create'])
+        ->name('roster.new');
+
+    // Save roster (create / update)
+    Route::post('/roster', [RosterController::class, 'store'])
+        ->name('roster.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -185,7 +362,18 @@ Route::middleware(['auth'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin / Supervisor Routes
+| Admin / Supervisor routes for Registration Approval
+|--------------------------------------------------------------------------
+*/
+<<<<<<<<< Temporary merge branch 1
+Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+    Route::get('/admin/registrations', [RegistrationApprovalController::class, 'index'])
+        ->name('admin.registrations');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth scaffolding routes (Laravel default)
 |--------------------------------------------------------------------------
 */
 Route::middleware('role:Admin,Supervisor')->group(function () {
@@ -195,9 +383,4 @@ Route::middleware('role:Admin,Supervisor')->group(function () {
 });
 
 
-/*
-|--------------------------------------------------------------------------
-| Laravel Breeze / Fortify / Auth Scaffolding
-|--------------------------------------------------------------------------
-*/
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

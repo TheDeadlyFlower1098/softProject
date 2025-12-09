@@ -2,112 +2,137 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\MedicineCheck;
-use App\Models\Patient;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Models\MedicineCheck;
+use Illuminate\Support\Carbon;
 
 class ReportController extends Controller
 {
-    //Return missed activities per patient
-    public function missedActivities(Request $request)
-    {
-        $date = $request->get('date');
-        $filter = $request->get('filter');
-        $showAll = $request->boolean('all', false);
-
-        $patients = Patient::all();
-        $report = [];
-
-        foreach ($patients as $p) {
-            $checkQuery = MedicineCheck::where('patient_id', $p->id);
-
-            if (!$showAll && $date) {
-                $checkQuery->whereDate('date', $date);
-            }
-
-            $check = $checkQuery->orderBy('date', 'desc')->first();
-
-            // Determine status
-            $status = 'none'; // fully missed
-            if ($check) {
-                $status = (!$check->morning || !$check->afternoon || !$check->night)
-                    ? 'partial'
-                    : 'complete';
-            }
-
-            // Get caretaker name from Employee table
-            $caretakerName = null;
-            if ($check && $check->caregiver_id) {
-                $caretaker = \App\Models\Employee::where('id', $check->caregiver_id)
-                            ->where('role', 'caregiver')
-                            ->first();
-                $caretakerName = $caretaker ? $caretaker->name : 'Unknown';
-            }
-
-            $report[] = [
-                'patient' => $p->patient_name,
-                'patient_id' => $p->id,
-                'caretaker' => $caretakerName,
-                'status' => $status,
-                'date' => $check ? $check->date->toDateString() : 'No record',
-                'morning' => $check ? ($check->morning ? 'taken' : 'missed') : null,
-                'afternoon' => $check ? ($check->afternoon ? 'taken' : 'missed') : null,
-                'night' => $check ? ($check->night ? 'taken' : 'missed') : null,
-                'breakfast' => $check ? ($check->breakfast ?? 'unknown') : null,
-                'lunch' => $check ? ($check->lunch ?? 'unknown') : null,
-                'dinner' => $check ? ($check->dinner ?? 'unknown') : null,
-            ];
-        }
-
-        // Apply search filter
-        if ($filter) {
-            $filter = strtolower($filter);
-            $report = array_filter($report, function ($m) use ($filter) {
-                return str_contains(strtolower($m['patient']), $filter)
-                    || str_contains((string)$m['patient_id'], $filter)
-                    || ($m['caretaker'] && str_contains(strtolower($m['caretaker']), $filter))
-                    || str_contains(strtolower($m['status']), $filter)
-                    || ($m['date'] && str_contains(strtolower($m['date']), $filter))
-                    || ($m['morning'] && str_contains(strtolower($m['morning']), $filter))
-                    || ($m['afternoon'] && str_contains(strtolower($m['afternoon']), $filter))
-                    || ($m['night'] && str_contains(strtolower($m['night']), $filter))
-                    || ($m['breakfast'] && str_contains(strtolower($m['breakfast']), $filter))
-                    || ($m['lunch'] && str_contains(strtolower($m['lunch']), $filter))
-                    || ($m['dinner'] && str_contains(strtolower($m['dinner']), $filter));
-            });
-
-            $report = array_values($report);
-        }
-
-        // Summary
-        $summary = [
-            'total_patients' => count($report),
-            'fully_missed' => count(array_filter($report, fn($m) => $m['status']==='none')),
-            'partial_missed' => count(array_filter($report, fn($m) => $m['status']==='partial')),
-            'fully_completed' => count(array_filter($report, fn($m) => $m['status']==='complete')),
-        ];
-
-        return response()->json([
-            'report' => $report,
-            'summary' => $summary
-        ]);
-    }
-
-
-    
     /**
-     * Render the admin report page
+     * Show the Admin & Supervisor Report page.
+     * We just need the most recent check date for the default picker.
      */
     public function viewReportPage()
     {
-        // Get the latest medicine check date
-        $latestDate = MedicineCheck::orderBy('date', 'desc')->value('date');
+        $latestDate = MedicineCheck::max('date'); // e.g. "2025-12-04 00:00:00"
 
-        // Fallback to today if no records exist
-        $latestDate = $latestDate ? Carbon::parse($latestDate)->toDateString() : now()->toDateString();
+        $latestDate = $latestDate
+            ? Carbon::parse($latestDate)->toDateString()    // "2025-12-04"
+            : null;
 
-        return view('admin_report', compact('latestDate'));
+        return view('admin_report', [
+            'latestDate' => $latestDate,
+        ]);
     }
+
+    /**
+     * JSON endpoint used by /admin-report to load missed activities.
+     */
+    public function missedActivities(Request $request)
+    {
+        $date    = $request->query('date');
+        $filter  = $request->query('filter');
+        $showAll = filter_var($request->query('all'), FILTER_VALIDATE_BOOLEAN);
+
+        // If not showing all and no date chosen, default to latest
+        if (!$showAll && empty($date)) {
+            $date = \App\Models\MedicineCheck::max('date');
+        }
+
+        // Base query: start from medicine_checks so we *always* have a caregiver_id
+        $query = DB::table('medicine_checks as mc')
+            ->join('patients', 'patients.id', '=', 'mc.patient_id')
+            ->leftJoin('employees as emp', 'emp.id', '=', 'mc.caregiver_id')
+            ->select([
+                'patients.id as patient_id',
+                'patients.patient_name as patient',
+                'mc.date as check_date',
+                'mc.morning',
+                'mc.afternoon',
+                'mc.night',
+                'emp.name as caretaker',   // <-- THIS is what JS reads as m.caretaker
+            ]);
+
+        if (!$showAll && $date) {
+            $dateOnly = substr($date, 0, 10);
+            $query->whereDate('mc.date', '=', $dateOnly);
+        }
+
+
+        // Text filter
+        if ($filter) {
+            $like = '%' . $filter . '%';
+            $query->where(function ($q) use ($like) {
+                $q->where('patients.patient_name', 'LIKE', $like)
+                ->orWhere('emp.name', 'LIKE', $like)
+                ->orWhere('mc.date', 'LIKE', $like);
+            });
+        }
+
+        $rows = $query
+            ->orderBy('patients.patient_name')
+            ->get();
+
+        // Helper to map DB value -> 'taken'/'missed'/null
+        $mapStatus = function ($val) {
+            if (is_null($val)) return null;
+            return $val ? 'taken' : 'missed';
+        };
+
+        $report  = [];
+        $summary = [
+            'total_patients'  => 0,
+            'fully_missed'    => 0,
+            'partial_missed'  => 0,
+            'fully_completed' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $morning   = $mapStatus($row->morning);
+            $afternoon = $mapStatus($row->afternoon);
+            $night     = $mapStatus($row->night);
+
+            $slots = [$morning, $afternoon, $night];
+
+            if (!array_filter($slots)) {
+                $status = 'none';
+            } elseif (!in_array('missed', $slots, true)) {
+                $status = 'complete';
+            } else {
+                $status = 'partial';
+            }
+
+            $report[] = [
+                'patient'   => $row->patient,
+                'caretaker' => $row->caretaker,   // <--- name from employees table
+                'status'    => $status,
+                'date'      => $row->check_date,
+
+                'morning'   => $morning,
+                'afternoon' => $afternoon,
+                'night'     => $night,
+
+                // still null until you wire meals in
+                'breakfast' => null,
+                'lunch'     => null,
+                'dinner'    => null,
+            ];
+
+            $summary['total_patients']++;
+            if ($status === 'none') {
+                $summary['fully_missed']++;
+            } elseif ($status === 'complete') {
+                $summary['fully_completed']++;
+            } else {
+                $summary['partial_missed']++;
+            }
+        }
+
+        return response()->json([
+            'summary' => $summary,
+            'report'  => $report,
+        ]);
+    }
+
 }

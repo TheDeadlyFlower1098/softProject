@@ -50,9 +50,14 @@ class MedicineCheckController extends Controller
         $check = MedicineCheck::findOrFail($id);
 
         $data = $request->validate([
-            'morning'   => 'boolean',
-            'afternoon' => 'boolean',
-            'night'     => 'boolean',
+            'patient_id'   => ['required', 'exists:patients,id'],
+            'date'         => ['required', 'date'],
+            'morning'      => ['nullable', 'in:taken,missed'],
+            'afternoon'    => ['nullable', 'in:taken,missed'],
+            'night'        => ['nullable', 'in:taken,missed'],
+            'breakfast'    => ['nullable', 'in:taken,missed'],
+            'lunch'        => ['nullable', 'in:taken,missed'],
+            'dinner'       => ['nullable', 'in:taken,missed'],
         ]);
 
         $check->update($data);
