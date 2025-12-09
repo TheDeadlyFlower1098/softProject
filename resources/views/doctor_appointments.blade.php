@@ -1,166 +1,234 @@
 @extends('layouts.app')
 
-@section('title', 'Doctors Appointment')
+@section('title', 'Doctor Appointment')
 
 @section('content')
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Doctors appointment</title>
 <style>
-  :root{
-    --blue-100:#d9e9fb;
-    --blue-300:#9ec1e6;
-    --green-200:#b9d7a9;
-    --green-500:#7cab5f;
-    --ink:#121826;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);}
+  * { box-sizing: border-box; }
 
-  /* Outer frame */
-  .layout{
-    width: 980px;
-    max-width: 96vw;
-    margin: 18px auto;
-    background: var(--blue-100);
-    border: 3px solid #c7d3e2;
-    border-radius: 6px;
-    padding: 18px;
-    display:flex;
-    gap: 26px;                 /* main + right rail */
-    align-items: flex-start;   /* keep title and rail aligned to top */
+  body {
+   background-color: #6791c3ff; 
+    font-family: Arial, Helvetica, sans-serif;
   }
 
-  /* Left column (title + form card) */
-  .left{
-    flex: 1 1 auto;  
-    min-width: 520px;
+  .page {
+    width: 950px;
+    min-height: 520px;
+    margin: 30px auto;
+    padding: 30px 40px;
+    background: #a1cafbff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
 
-  .title{
+  .title {
     font-size: 40px;
     font-weight: 700;
-    margin: 10px 0 14px 6px;
+    text-align: center;
+    margin-bottom: 30px;
   }
 
-  /* Green form card */
-  .card{
-    background: var(--green-200);
-    border: 3px solid #739966;
-    border-radius: 6px;
-    padding: 20px 24px 26px;
-    min-height: 530px;         /* tall like the sketch */
-    display:flex;
-    flex-direction: column;
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
     gap: 16px;
   }
 
-  /* Labels + inputs */
-  .row{
-    display:flex;
-    gap: 26px;
-    flex-wrap: wrap;
-  }
-  .field{
-    flex: 1 1 calc(50% - 13px);  /* two side-by-side on first row */
-    min-width: 230px;
-  }
-  .field.full{                   /* Date & Doctor full width */
-    flex-basis: 100%;
-  }
-  label{
-    display:block;
-    font-weight:700;
-    margin-bottom:6px;
-    text-align:left;
-  }
-  input[type="text"], input[type="date"]{
-    width:100%;
-    height:44px;
-    padding:8px 10px;
-    border:2px solid #7f93ac;
-    border-radius:6px;
-    background:#d7e7f6;
-    font-size:16px;
+  .label-box {
+    width: 150px;
+    background: #4378d6;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
   }
 
-  /* Buttons row */
-  .actions{
-    display:flex;
-    gap: 32px;
-    margin-top: 18px;
+  .input-box {
+    flex: 0 0 220px;
   }
-  .btn{
-    height:44px;
-    padding:0 28px;
-    border:2px solid #517c3b;
-    background:#7fb46a;
-    border-radius:6px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .btn:active{ transform: translateY(1px); }
 
-  /* Right rail */
-  .rail{
-    flex: 0 0 320px;            
-    align-self: stretch;    
-    background: var(--blue-300);
-    border: 3px solid #7ea4c9;
-    border-radius: 6px;
-    padding: 20px;
-    display:flex;
-    align-items:flex-start;
+  .input-box input,
+  .input-box select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 2px solid #4378d6;
+    font-size: 15px;
   }
-  .rail h2{
-    margin: 6px 0 0;
-    color:#57a433;
-    font-size: 28px;
-    line-height: 1.05;
+
+  .input-box input[readonly] {
+    background: #f3f4f6;
+  }
+
+  .right-text {
+    margin-left: auto;
+    flex: 0 0 280px;
+  }
+
+
+
+  .buttons {
+    margin-top: 26px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .btn {
+    min-width: 120px;
+    padding: 10px 18px;
+    border-radius: 4px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-ok {
+    background: #4b9d4b;
+    color: #fff;
+  }
+
+  .btn-ok:hover {
+    background: #3e8640;
+  }
+
+  .btn-cancel {
+    background: #888;
+    color: #fff;
+  }
+
+  .btn-cancel:hover {
+    background: #6d6d6d;
+  }
+
+  .error-text {
+    color: #b91c1c;
+    font-size: 13px;
+    margin-top: 4px;
   }
 </style>
-</head>
-<body>
-  <div class="layout">
-    <div class="left">
-      <h1 class="title">Doctors appointment</h1>
 
-      <section class="card">
-        <div class="row">
-          <div class="field">
-            <label for="pid">Patient ID</label>
-            <input type="text" id="pid">
-          </div>
-          <div class="field">
-            <label for="pname">Patient Name</label>
-            <input type="text" id="pname">
-          </div>
+<div class="page">
+  <h1 class="title">Doctor&rsquo;s Appointment</h1>
 
-          <div class="field full">
-            <label for="date">Date</label>
-            <input type="text" id="date">
-          </div>
+  @if (session('success'))
+    <p style="color:#15803d; text-align:center; margin-bottom:18px;">
+      {{ session('success') }}
+    </p>
+  @endif
 
-          <div class="field full">
-            <label for="doctor">Doctor</label>
-            <input type="text" id="doctor">
-          </div>
-        </div>
+  {{-- Validation errors --}}
+  @if ($errors->any())
+    <ul style="color:#b91c1c; margin-bottom:18px;">
+      @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  @endif
 
-        <div class="actions">
-          <button class="btn">schedule</button>
-          <button class="btn">cancel</button>
-        </div>
-      </section>
+  <form method="POST" action="{{ route('doctor.appointments.store') }}">
+    @csrf
+
+    {{-- Patient ID + Patient Name --}}
+    <div class="row">
+      <div class="label-box">Patient ID</div>
+      <div class="input-box">
+        <input
+          type="number"
+          name="patient_id"
+          id="patient_id"
+          value="{{ old('patient_id') }}"
+          required
+        >
+      </div>
+
+      <div class="label-box" style="margin-left:auto;">Patient Name</div>
+      <div class="input-box">
+        <input
+          type="text"
+          id="patient_name"
+          value="{{ $patientName ?? '' }}"
+          readonly
+        >
+      </div>
     </div>
 
-    <aside class="rail">
-      <h2>Admin<br>dashboard</h2>
-    </aside>
-  </div>
-</body>
-</html>
+    {{-- Date --}}
+    <div class="row">
+      <div class="label-box">Date</div>
+      <div class="input-box">
+        <input
+          type="date"
+          name="date"
+          id="date"
+          value="{{ $selectedDate }}"
+          required
+        >
+      </div>
+      <div class="right-text">
+        <small>
+          Changing the date will reload this page and filter the
+          doctor dropdown to the doctor on duty in the roster.
+        </small>
+      </div>
+    </div>
+
+    {{-- Doctor --}}
+    <div class="row">
+      <div class="label-box">Doctor</div>
+      <div class="input-box">
+        <select name="doctor_id" id="doctor_id" required>
+          <option value="">-- Select Doctor --</option>
+          @foreach($doctors as $doctor)
+            <option value="{{ $doctor->id }}"
+              {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>
+              {{ $doctor->name }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button type="submit" class="btn btn-ok">Ok</button>
+      <button type="button" onclick="window.history.back()" class="btn btn-cancel">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>
+
+{{-- Simple JS: load patient name and refilter doctors by date --}}
+<script>
+  // Fetch patient name when ID loses focus
+  document.getElementById('patient_id').addEventListener('blur', function () {
+    const id = this.value.trim();
+    const nameBox = document.getElementById('patient_name');
+
+    if (!id) {
+      nameBox.value = '';
+      return;
+    }
+
+    fetch("{{ url('/api/patients') }}/" + encodeURIComponent(id))
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        nameBox.value = data && data.name ? data.name : '';
+      })
+      .catch(() => { nameBox.value = ''; });
+  });
+
+  // When date changes, reload page with ?date=...
+  document.getElementById('date').addEventListener('change', function () {
+    const value = this.value;
+    if (!value) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('date', value);
+    window.location.href = url.toString();
+  });
+</script>
+@endsection
