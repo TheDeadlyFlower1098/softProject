@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Appointment;
+use App\Models\Prescription;   // <-- added
 
 class DoctorHomeController extends Controller
 {
@@ -13,12 +14,11 @@ class DoctorHomeController extends Controller
         $userId = $user->id;
 
         // Determine whether user is doctor or patient
-        // (Change the numbers if your role IDs are different)
         $isDoctor = $user->role_id == 2;
         $isPatient = $user->role_id == 1;
 
         if ($isDoctor) {
-            // User is a doctor → show appointments where they are the doctor
+            // Doctor → view appointments where they are the doctor
             $upcomingAppointments = Appointment::where('doctor_id', $userId)
                 ->where('date', '>=', now())
                 ->orderBy('date')
@@ -30,7 +30,7 @@ class DoctorHomeController extends Controller
                 ->get();
         }
         else {
-            // User is a patient → show appointments where they are the patient
+            // Patient → view appointments where they are the patient
             $upcomingAppointments = Appointment::where('patient_id', $userId)
                 ->where('date', '>=', now())
                 ->orderBy('date')
@@ -44,10 +44,24 @@ class DoctorHomeController extends Controller
 
         return view('doctorHome', compact('upcomingAppointments', 'pastAppointments'));
     }
-    public function appointmentDetails($id)
-{
-    $appointment = Appointment::with('patient')->findOrFail($id);
-    return view('appointmentDetails', compact('appointment'));
-}
 
+    public function appointmentDetails($id)
+    {
+        // Load appointment, patient + patient->user + doctor
+        $appointment = Appointment::with(['patient.user', 'doctor'])
+            ->findOrFail($id);
+
+        // Logged-in doctor (same value stored in prescriptions.doctor_id)
+        $doctorId = auth()->id();
+
+        // Load ONLY prescriptions:
+        //  - for this patient
+        //  - AND written by this doctor
+        $prescriptions = Prescription::where('patient_id', $appointment->patient_id)
+            ->where('doctor_id', $doctorId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('appointmentDetails', compact('appointment', 'prescriptions'));
+    }
 }
