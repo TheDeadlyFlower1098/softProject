@@ -36,11 +36,11 @@ class ReportController extends Controller
         $showAll = filter_var($request->query('all'), FILTER_VALIDATE_BOOLEAN);
 
         // If not showing all and no date chosen, default to latest
-        if (!$showAll && empty($date)) {
-            $date = \App\Models\MedicineCheck::max('date');
+        if (! $showAll && empty($date)) {
+            $date = MedicineCheck::max('date');
         }
 
-        // Base query: start from medicine_checks so we *always* have a caregiver_id
+        // Base query: start from medicine_checks so we *always* have a caregiver_id (if set)
         $query = DB::table('medicine_checks as mc')
             ->join('patients', 'patients.id', '=', 'mc.patient_id')
             ->leftJoin('employees as emp', 'emp.id', '=', 'mc.caregiver_id')
@@ -51,22 +51,24 @@ class ReportController extends Controller
                 'mc.morning',
                 'mc.afternoon',
                 'mc.night',
-                'emp.name as caretaker',   // <-- THIS is what JS reads as m.caretaker
+                'mc.breakfast',
+                'mc.lunch',
+                'mc.dinner',
+                'emp.name as caretaker',   // JS reads this as m.caretaker
             ]);
 
-        if (!$showAll && $date) {
+        if (! $showAll && $date) {
             $dateOnly = substr($date, 0, 10);
             $query->whereDate('mc.date', '=', $dateOnly);
         }
-
 
         // Text filter
         if ($filter) {
             $like = '%' . $filter . '%';
             $query->where(function ($q) use ($like) {
                 $q->where('patients.patient_name', 'LIKE', $like)
-                ->orWhere('emp.name', 'LIKE', $like)
-                ->orWhere('mc.date', 'LIKE', $like);
+                  ->orWhere('emp.name', 'LIKE', $like)
+                  ->orWhere('mc.date', 'LIKE', $like);
             });
         }
 
@@ -74,10 +76,33 @@ class ReportController extends Controller
             ->orderBy('patients.patient_name')
             ->get();
 
-        // Helper to map DB value -> 'taken'/'missed'/null
+        /**
+         * Normalize DB value -> 'taken' / 'missed' / null
+         * Handles:
+         *  - strings: 'taken' / 'missed'
+         *  - booleans / ints: 1 / 0
+         */
         $mapStatus = function ($val) {
-            if (is_null($val)) return null;
-            return $val ? 'taken' : 'missed';
+            if (is_null($val)) {
+                return null;
+            }
+
+            // Already strings
+            if ($val === 'taken' || $val === 'missed') {
+                return $val;
+            }
+
+            // Boolean / int / "1"/"0"
+            if ($val === true || $val === 1 || $val === '1') {
+                return 'taken';
+            }
+
+            if ($val === false || $val === 0 || $val === '0') {
+                return 'missed';
+            }
+
+            // Anything else → unknown
+            return null;
         };
 
         $report  = [];
@@ -89,23 +114,52 @@ class ReportController extends Controller
         ];
 
         foreach ($rows as $row) {
+            // Map meds
             $morning   = $mapStatus($row->morning);
             $afternoon = $mapStatus($row->afternoon);
             $night     = $mapStatus($row->night);
 
-            $slots = [$morning, $afternoon, $night];
+            // Map meals
+            $breakfast = $mapStatus($row->breakfast);
+            $lunch     = $mapStatus($row->lunch);
+            $dinner    = $mapStatus($row->dinner);
 
-            if (!array_filter($slots)) {
-                $status = 'none';
-            } elseif (!in_array('missed', $slots, true)) {
-                $status = 'complete';
-            } else {
+            // ALL 6 slots
+            $slots = [
+                $morning,
+                $afternoon,
+                $night,
+                $breakfast,
+                $lunch,
+                $dinner,
+            ];
+
+            // Only consider non-null slots for "all taken" / "all missed" tests
+            $known = array_values(
+                array_filter($slots, fn ($v) => ! is_null($v))
+            );
+
+            $hasData   = count($known) > 0;
+            $allTaken  = $hasData && collect($known)->every(fn ($v) => $v === 'taken');
+            $allMissed = $hasData && collect($known)->every(fn ($v) => $v === 'missed');
+
+            // Display status (used by Blade)
+            if ($allTaken) {
+                $status = 'complete';          // "All checks done ✅"
+            } elseif ($allMissed) {
+                $status = 'none';              // "All checks missing"
+            } elseif (! $hasData) {
+                // No data at all – treat as partial-ish in summary (no full counts)
                 $status = 'partial';
+            } else {
+                // Mix of taken/missed
+                $status = 'partial';           // "Some checks missing"
             }
 
+            // Build per-patient record for the frontend
             $report[] = [
                 'patient'   => $row->patient,
-                'caretaker' => $row->caretaker,   // <--- name from employees table
+                'caretaker' => $row->caretaker,
                 'status'    => $status,
                 'date'      => $row->check_date,
 
@@ -113,20 +167,24 @@ class ReportController extends Controller
                 'afternoon' => $afternoon,
                 'night'     => $night,
 
-                // still null until you wire meals in
-                'breakfast' => null,
-                'lunch'     => null,
-                'dinner'    => null,
+                'breakfast' => $breakfast,
+                'lunch'     => $lunch,
+                'dinner'    => $dinner,
             ];
 
+            // ---- SUMMARY COUNTS ----
             $summary['total_patients']++;
-            if ($status === 'none') {
-                $summary['fully_missed']++;
-            } elseif ($status === 'complete') {
+
+            if ($allTaken) {
                 $summary['fully_completed']++;
-            } else {
+            } elseif ($allMissed) {
+                $summary['fully_missed']++;
+            } elseif ($hasData) {
+                // Has at least some data but not all taken/missed
                 $summary['partial_missed']++;
             }
+            // If ! $hasData, we don't increment any of the three buckets,
+            // just total_patients.
         }
 
         return response()->json([
@@ -134,5 +192,4 @@ class ReportController extends Controller
             'report'  => $report,
         ]);
     }
-
 }

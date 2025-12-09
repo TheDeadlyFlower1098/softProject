@@ -17,6 +17,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\DataViewerController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RolesController;
 
 /*
@@ -111,7 +112,55 @@ Route::middleware('auth')->group(function () {
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
         ->name('patient.dashboard');
 
-    // Patient saves single medicine record
+    /*
+    |--------------------------------------------------------------------------
+    | Patients and additional information (Admin/Supervisor/Doctor/Caregiver)
+    |--------------------------------------------------------------------------
+    */
+
+    // Patients list (points to patientsList.blade.php)
+    Route::get('/patients', [PatientController::class, 'index'])
+        ->middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+        ->name('patients');
+
+    // Additional patient information page (Admin/Supervisor/Doctor/Caregiver)
+    // (you already have this, just keep it)
+    Route::middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+        ->group(function () {
+            Route::get('/patients/{patient}/additional', [PatientController::class, 'additional'])
+                ->name('patients.additional');
+        });
+        
+    /*
+    |--------------------------------------------------------------------------
+    | Employees (Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/employees', [EmployeeController::class, 'index'])
+        ->middleware('role:Admin,Supervisor')
+        ->name('employees');
+
+    Route::get('/employees/filter', [EmployeeController::class, 'filtered'])
+        ->middleware('role:Admin,Supervisor');
+
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])
+        ->middleware('role:Admin,Supervisor');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Doctor appointments (created by Admin & Supervisor)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/doctor-appointments', function () {
+        return view('doctor_appointments');
+    })->middleware('role:Admin,Supervisor')
+      ->name('doctor.appointments');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Medicine check routes
+    |--------------------------------------------------------------------------
+    */
     Route::post(
         '/patient_dashboard/medicine-check',
         [MedicineCheckController::class, 'saveSingle']

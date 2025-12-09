@@ -58,6 +58,8 @@
         </a>
     @endif
 
+<<<<<<< HEAD
+=======
     {{-- Additional patient information: Admin & Supervisor --}}
     @if(in_array($role, ['admin','supervisor']) && Route::has('patients.additional'))
         <a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">
@@ -65,6 +67,7 @@
         </a>
     @endif
 
+>>>>>>> 1600992e192a5aa170e768c25b53ba78f0e23e67
     {{-- Employees page: Admin & Supervisor --}}
     @if(in_array($role, ['admin','supervisor']) && Route::has('employees'))
         <a href="{{ route('employees') }}" class="{{ nav_active('employees') }}">
@@ -163,11 +166,6 @@
     {{-- Patients list --}}
     @if(in_array($role, ['admin','supervisor','doctor','caregiver']) && Route::has('patients'))
         <li><a href="{{ route('patients') }}" class="{{ nav_active('patients') }}">Patients</a></li>
-    @endif
-
-    {{-- Additional patient information --}}
-    @if(in_array($role, ['admin','supervisor']) && Route::has('patients.additional'))
-        <li><a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">Additional Info</a></li>
     @endif
 
     {{-- Employees --}}
