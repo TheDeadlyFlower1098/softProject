@@ -13,13 +13,13 @@ class MedicineCheckController extends Controller
      |  API-style endpoints (JSON)
      * ---------------------------------------------------------------------*/
 
-    // GET /api/medicine-checks (if you ever use it)
+    // GET /medicine-checks (optional API)
     public function index()
     {
         return response()->json(MedicineCheck::paginate(20));
     }
 
-    // POST /medicine-check  (generic create – not used by dashboards)
+    // POST /medicine-check (generic create – not used by dashboards)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -65,7 +65,7 @@ class MedicineCheckController extends Controller
     /**
      * Patient presses "Save" on their own dashboard.
      * Route: POST /patient_dashboard/medicine-check
-     * Name:  medicinecheck.saveToday
+     * Name:  medicinecheck.saveSingle
      */
     public function saveSingle(Request $request)
     {
@@ -76,20 +76,20 @@ class MedicineCheckController extends Controller
             abort(403, 'No patient record linked to this user.');
         }
 
-        // Only booleans for checkboxes; unchecked ones are missing
         $request->validate([
             'morning'   => 'nullable|boolean',
             'afternoon' => 'nullable|boolean',
             'night'     => 'nullable|boolean',
         ]);
 
+        $today = now()->toDateString();
+
         MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
-                'date'       => today(),
+                'date'       => $today,
             ],
             [
-                // in your previous version this was the logged-in user
                 'caregiver_id' => $user->id,
                 'morning'      => $request->boolean('morning'),
                 'afternoon'    => $request->boolean('afternoon'),
@@ -113,10 +113,10 @@ class MedicineCheckController extends Controller
      */
     public function dashboard()
     {
-        // For now we just pull all patients; later you can filter
+        // For now we just pull all patients; you can later filter by caregiver, wing, etc.
         $patients = Patient::with('user')->get();
 
-        // view file: resources/views/caregiver.blade.php
+        // view: resources/views/caregiver.blade.php
         return view('caregiver', compact('patients'));
     }
 
@@ -127,11 +127,20 @@ class MedicineCheckController extends Controller
      */
     public function saveMultiple(Request $request)
     {
-        $user = auth()->user();          // caregiver
+        $user = auth()->user();          // caregiver user
         $caregiverId = $user->id;
 
-        // "patients" is the big array from the caregiver form
+        // Big array from form: patients[<id>][field]...
         $rows = $request->input('patients', []);
+
+        // If somehow nothing was sent, just return
+        if (!is_array($rows) || empty($rows)) {
+            return redirect()
+                ->route('caregiver.dashboard')
+                ->with('success', 'No changes to save.');
+        }
+
+        $today = now()->toDateString();
 
         foreach ($rows as $row) {
             if (empty($row['patient_id'])) {
@@ -140,19 +149,32 @@ class MedicineCheckController extends Controller
 
             $patientId = $row['patient_id'];
 
+            // Only hit DB if at least one checkbox for this patient is present
+            $hasAny =
+                !empty($row['morning']) ||
+                !empty($row['afternoon']) ||
+                !empty($row['night']) ||
+                !empty($row['breakfast'] ?? null) ||
+                !empty($row['lunch'] ?? null) ||
+                !empty($row['dinner'] ?? null);
+
+            if (! $hasAny) {
+                // Skip patients where caregiver didn’t tick anything
+                continue;
+            }
+
             MedicineCheck::updateOrCreate(
                 [
                     'patient_id' => $patientId,
-                    'date'       => today(),
+                    'date'       => $today,
                 ],
                 [
                     'caregiver_id' => $caregiverId,
-
-                    // checkboxes: present => 1, missing => 0
+                    // checkboxes: present => true, missing => false
                     'morning'   => !empty($row['morning']),
                     'afternoon' => !empty($row['afternoon']),
                     'night'     => !empty($row['night']),
-                    // If you later add meal columns to the table, you can map them here:
+                    // If these columns exist in your DB, you can uncomment:
                     // 'breakfast' => !empty($row['breakfast'] ?? null),
                     // 'lunch'     => !empty($row['lunch'] ?? null),
                     // 'dinner'    => !empty($row['dinner'] ?? null),
