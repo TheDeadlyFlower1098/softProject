@@ -22,69 +22,60 @@ use App\Http\Controllers\RolesController;
 
 /*
 |--------------------------------------------------------------------------
-| Routes related to prescriptions / appointments
+| Prescription / Appointment Routes
 |--------------------------------------------------------------------------
 */
 
-// store prescription for an appointment
 Route::post(
     '/appointments/{appointment}/prescriptions',
     [PrescriptionController::class, 'store']
 )->name('appointments.prescriptions.store');
 
-// view a single appointment's details
 Route::get(
     '/appointments/{id}/details',
     [DoctorHomeController::class, 'appointmentDetails']
 )->name('appointment.details');
 
-// Doctor home route (doctor only)
-Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
-    ->middleware(['auth', 'role:Doctor'])
-    ->name('doctorHome');
 
 /*
 |--------------------------------------------------------------------------
-| Public routes
+| Public Routes (no auth)
 |--------------------------------------------------------------------------
 */
 
-// Landing page
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Data viewer
-Route::get('/dataviewer', [DataViewerController::class, 'index']);
+Route::get('/dataviewer', [DataViewerController::class, 'index'])
+    ->name('dataviewer');
+
 
 /*
 |--------------------------------------------------------------------------
-| Guest routes (not logged in)
+| Guest Routes (only when NOT logged in)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
 
-    Route::get('/registration-approval', function() {
-        return view('registration_approval');
-    });
-
+    // Registration approval view (if you really want it visible when logged out)
     Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
         ->name('registration.approval');
 
-    // approve a specific request
-    Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+    Route::post('/registration-approval/{id}/approve',
+        [RegistrationApprovalController::class, 'approve'])
         ->name('registration.approve');
 
-    // deny a specific request
-    Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+    Route::post('/registration-approval/{id}/deny',
+        [RegistrationApprovalController::class, 'deny'])
         ->name('registration.deny');
 
-    // Login page
+    // Login
     Route::get('/login', function () {
         return view('login');
     })->name('login');
 
-    // Signup page (uses welcome with signup form)
+    // Signup page (reuses welcome)
     Route::get('/signup', function () {
         return view('welcome');
     })->name('signup');
@@ -96,37 +87,29 @@ Route::middleware('guest')->group(function () {
     Route::post('/signup', [RegistrationRequestController::class, 'store'])
         ->name('signup.store');
 
-    // (optional) public-only page example
+    // Example public-only page
     Route::get('/family-member', function () {
         return view('family_member');
     })->name('family.member');
 });
 
+
 /*
 |--------------------------------------------------------------------------
-| Authenticated routes (logged in)
+| Authenticated Routes (any logged-in user)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
 
-    // Home page for logged-in users
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Patient dashboards
-    |--------------------------------------------------------------------------
-    */
-    // Patient dashboard (used as "Patient Home")
-    Route::get('/dashboard', [PatientDashboardController::class, 'index'])
-        ->middleware('role:Patient')
+    // Generic dashboards / views
+    Route::get('/dashboard', fn () => view('patient_dashboard'))
         ->name('dashboard');
 
-    // Alternative patient dashboard route (if needed elsewhere)
+    Route::get('/home', fn () => view('home'))
+        ->name('home');
+
+    // Patient dashboard
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
-        ->middleware('role:Patient')
         ->name('patient.dashboard');
 
     /*
@@ -180,141 +163,143 @@ Route::middleware('auth')->group(function () {
     */
     Route::post(
         '/patient_dashboard/medicine-check',
-        [MedicineCheckController::class, 'saveForTodayFromDashboard']
-    )->name('medicinecheck.saveToday');
+        [MedicineCheckController::class, 'saveSingle']
+    )->name('medicinecheck.saveSingle');
 
-    Route::post(
-        '/medicine-check',
-        [MedicineCheckController::class, 'store']
-    )->name('medicinecheck.store');
+    // Caregiver dashboard + save
+    Route::get('/caregiver', [MedicineCheckController::class, 'dashboard'])
+        ->name('caregiver.dashboard');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Family & Caregiver dashboards
-    |--------------------------------------------------------------------------
-    */
+    Route::post('/caregiver/save-today',
+        [MedicineCheckController::class, 'saveMultiple'])
+        ->name('caregiver.saveToday');
 
-    // Family dashboard (only Family role)
-    Route::middleware('role:Family')->group(function () {
-        Route::get(
-            '/family-dashboard',
-            [FamilyDashboardController::class, 'index']
-        )->name('family.home');
-    });
-
-    // Caregiver dashboard
-    Route::get('/caregiver-dashboard', function () {
-        $user = auth()->user();
-
-        if (! $user || $user->role->name !== 'Caregiver') {
-            abort(403);
-        }
-
-        return view('caregiver_dashboard');
-    })->name('caregiver.home');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Admin report (Admin & Supervisor)
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/admin-report', [ReportController::class, 'viewReportPage'])
-        ->middleware('role:Admin,Supervisor')
-        ->name('admin.report');
-
-    Route::get('/admin-report/data', [ReportController::class, 'missedActivities'])
-        ->middleware('role:Admin,Supervisor');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Payments (Admin only)
-    |--------------------------------------------------------------------------
-    */
-    
-
-    Route::middleware(['auth', 'role:Admin'])->group(function () {
-        // List all patients + payments
-        Route::get('/payments', [PaymentController::class, 'adminIndex'])
-            ->name('payments');
-
-        // Record a payment for a specific patient
-        Route::post('/payments/{patient}/pay', [PaymentController::class, 'recordPayment'])
-            ->name('payments.pay');
-    });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Roster routes
-    |--------------------------------------------------------------------------
-    */
-
-    // Everyone logged in can view the roster dashboard
+    // Roster routes (controller itself can further restrict create/store)
     Route::get('/roster', [RosterController::class, 'dashboard'])
         ->name('roster.dashboard');
 
-    // New roster form (Admin / Supervisor)
     Route::get('/roster/new', [RosterController::class, 'create'])
-        ->middleware('role:Admin,Supervisor')
         ->name('roster.new');
 
-    // Save roster (create / update)
     Route::post('/roster', [RosterController::class, 'store'])
-        ->middleware('role:Admin,Supervisor')
         ->name('roster.store');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Roles page (Admin only)
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/roles', function () {
-        return view('roles');
-    })->middleware('role:Admin')
-      ->name('roles.index');
-
-    Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
-    Route::post('/roles', [RolesController::class, 'store'])->name('roles.store');
-    Route::patch('/roles/users/{user}', [RolesController::class, 'updateUserRole'])
-        ->name('roles.users.update');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logout
-    |--------------------------------------------------------------------------
-    */
+    // Logout
     Route::post('/logout', function () {
         Auth::logout();
-
         request()->session()->invalidate();
         request()->session()->regenerateToken();
-
         return redirect('/');
     })->name('logout');
 });
 
+
 /*
 |--------------------------------------------------------------------------
-| Admin / Supervisor routes for Registration Approval
+| Doctor Routes (Doctor role only)
+|--------------------------------------------------------------------------
+*/
+
+// Doctor home route
+Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+    ->middleware(['auth', 'role:Doctor'])
+    ->name('doctorHome');
+
+
+/*
+|--------------------------------------------------------------------------
+| Doctor Appointment Creation (Admin + Supervisor)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+
+    // Appointment creation form
+    Route::get(
+        '/doctor-appointments',
+        [DoctorHomeController::class, 'createAppointment']
+    )->name('doctor.appointments');
+
+    // Store appointment
+    Route::post(
+        '/doctor-appointments',
+        [DoctorHomeController::class, 'storeAppointment']
+    )->name('doctor.appointments.store');
+
+    // AJAX patient lookup
+    Route::get(
+        '/api/patients/{patient}',
+        [DoctorHomeController::class, 'lookupPatient']
+    )->name('patients.lookup');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Family Dashboard (Family role only)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:Family'])->group(function () {
+    Route::get('/family-dashboard', [FamilyDashboardController::class, 'index'])
+        ->name('family.dashboard');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin-only Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:Admin'])->group(function () {
+
+    // Payments
+    Route::get('/payments', [PaymentController::class, 'adminIndex'])
+        ->name('payments');
+
+    Route::post('/payments/{patient}/pay',
+        [PaymentController::class, 'recordPayment'])
+        ->name('payments.pay');
+
+    // Roles management
+    Route::get('/roles', [RolesController::class, 'index'])
+        ->name('roles.index');
+
+    Route::post('/roles', [RolesController::class, 'store'])
+        ->name('roles.store');
+
+    Route::patch(
+        '/roles/users/{user}',
+        [RolesController::class, 'updateUserRole']
+    )->name('roles.users.update');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin / Supervisor Routes (Registration Approval, etc.)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
-    Route::get(
-        '/registration-approval',
-        [RegistrationApprovalController::class, 'index']
-    )->name('registration.approval');
 
-    Route::post(
-        '/registration-approval/{id}/approve',
-        [RegistrationApprovalController::class, 'approve']
-    )->name('registration.approve');
+    // Admin registrations list
+    Route::get('/admin/registrations',
+        [RegistrationApprovalController::class, 'index'])
+        ->name('admin.registrations');
 
-    Route::post(
-        '/registration-approval/{id}/deny',
-        [RegistrationApprovalController::class, 'deny']
-    )->name('registration.deny');
+    // Admin registration approval page (same controller as above)
+    Route::get('/admin/registration-approval',
+        [RegistrationApprovalController::class, 'index'])
+        ->name('registration.approval.admin');
+
+    Route::post('/admin/registration-approval/{id}/approve',
+        [RegistrationApprovalController::class, 'approve'])
+        ->name('registration.approve.admin');
+
+    Route::post('/admin/registration-approval/{id}/deny',
+        [RegistrationApprovalController::class, 'deny'])
+        ->name('registration.deny.admin');
 });
+
 
 /*
 |--------------------------------------------------------------------------

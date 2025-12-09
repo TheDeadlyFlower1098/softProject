@@ -113,6 +113,7 @@
     margin-bottom: 12px;
     border-radius: 10px;
     transition: transform 0.2s;
+    position: relative;
   }
   .appointment:hover { transform: translateY(-2px); }
 
@@ -139,64 +140,88 @@
 
     <main>
       <div class="container">
+        <!-- Search Bar -->
+        <input 
+          type="text" 
+          id="searchInput"
+          placeholder="Search by patient name..."
+          style="
+            width:100%;
+            padding:12px;
+            border-radius:8px;
+            border:none;
+            margin-bottom:20px;
+            font-size:16px;
+            background:rgba(255,255,255,0.1);
+            color:white;
+          "
+        >
+
+        {{-- Upcoming appointments --}}
         <div class="appointments" id="upcomingAppointments">
-            <h1>upcomingAppointments</h1>
-    @forelse ($upcomingAppointments as $appointment)
-    <div class="appointment" style="position:relative; padding:15px; background: rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px;">
-   <h3>
-        {{ $appointment->patient && $appointment->patient->user 
-            ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name 
-            : 'No Patient' }}
-    </h3>
-        <p><strong>Date:</strong> {{ $appointment->date }}</p>
-        <p><strong>Reason:</strong> {{ $appointment->notes }}</p>
+          <h1>Upcoming Appointments</h1>
 
-        <a href="{{ route('appointment.details', $appointment->id) }}"
-           style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
-           View Info
-        </a>
-    </div>
-@empty
-    <p>No upcoming appointments.</p>
-@endforelse
-</div>
-        <div id="PastAppointments">
-        <h1>Past Appointments</h1>
+          @forelse ($upcomingAppointments as $appointment)
+            <div class="appointment">
+              <h3>
+                {{ $appointment->patient && $appointment->patient->user 
+                    ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name 
+                    : 'No Patient' }}
+              </h3>
+              <p><strong>Date:</strong> {{ $appointment->date }}</p>
+              <p><strong>Reason:</strong> {{ $appointment->notes }}</p>
 
-            <div id="PastAppointments">
-                @php $pastAppointments = $pastAppointments ?? collect(); @endphp
+              <a href="{{ route('appointment.details', $appointment->id) }}"
+                 style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
+                 View Info
+              </a>
+            </div>
+          @empty
+            <p>No upcoming appointments.</p>
+          @endforelse
+        </div>
 
-                @forelse($pastAppointments as $appt)
-                    <div class="appointment">
-                        <h3>{{ $appt->doctor->name ?? 'No Doctor' }}</h3>
-                        <p><strong>Date:</strong> {{ $appt->date }}</p>
-                        <p><strong>Status:</strong> {{ $appt->status ?? '—' }}</p>
+        {{-- Past appointments --}}
+        <div class="appointments" id="pastAppointments">
+          <h1>Past Appointments</h1>
 
-                        @if(!empty($appt->notes))
-                            <p><strong>Notes:</strong> {{ $appt->notes }}</p>
-                        @endif
-                    </div>
-                @empty
-                    <div class="appointment">
-                        <p><em>No past appointments found.</em></p>
-                    </div>
-                @endforelse
-</div>
+          @php $pastAppointments = $pastAppointments ?? collect(); @endphp
 
-   
+          @forelse($pastAppointments as $appt)
+            <div class="appointment">
+              <h3>{{ $appt->doctor->name ?? 'No Doctor' }}</h3>
+              <p><strong>Date:</strong> {{ $appt->date }}</p>
+              <p><strong>Status:</strong> {{ $appt->status ?? '—' }}</p>
+
+              @if(!empty($appt->notes))
+                <p><strong>Notes:</strong> {{ $appt->notes }}</p>
+              @endif
+            </div>
+          @empty
+            <div class="appointment">
+              <p><em>No past appointments found.</em></p>
+            </div>
+          @endforelse
+        </div>
       </div>
 
       <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const searchInput = document.getElementById("searchInput");
+          const upcomingAppointments = document.getElementById("upcomingAppointments");
 
-        // Search
-        searchInput.addEventListener('input', function() {
-          const filter = searchInput.value.toLowerCase();
-          const appointments = upcomingAppointments.getElementsByClassName('appointment');
-          Array.from(appointments).forEach(appointment => {
-            const name = appointment.querySelector('h3').textContent.toLowerCase();
-            appointment.style.display = name.includes(filter) ? '' : 'none';
+          if (!searchInput || !upcomingAppointments) return;
+
+          searchInput.addEventListener("input", () => {
+              const filter = searchInput.value.toLowerCase();
+              const cards = upcomingAppointments.getElementsByClassName("appointment");
+
+              Array.from(cards).forEach(card => {
+                  const name = card.querySelector("h3").textContent.toLowerCase();
+                  card.style.display = name.includes(filter) ? "block" : "none";
+              });
           });
-        });
+      });
       </script>
     </main>
   </div>
