@@ -59,44 +59,38 @@ class MedicineCheckController extends Controller
     public function saveForTodayFromDashboard(Request $request)
     {
         $user = auth()->user();
-        $patient = $user->patient;   // requires User::patient() relationship
+        $patient = $user->patient;   // assumes User has ->patient relation
 
         if (! $patient) {
             abort(403, 'No patient record linked to this user.');
         }
 
-        // We only care about the status fields here; patient/date come from context.
-        $data = $request->validate([
-            'morning'      => ['nullable', 'in:taken,missed'],
-            'afternoon'    => ['nullable', 'in:taken,missed'],
-            'night'        => ['nullable', 'in:taken,missed'],
-            'breakfast'    => ['nullable', 'in:taken,missed'],
-            'lunch'        => ['nullable', 'in:taken,missed'],
-            'dinner'       => ['nullable', 'in:taken,missed'],
-        ]);
+        // Decide which caregiver_id to store:
+        // if your patients table has a caregiver_id, prefer that; otherwise use the logged-in user
+        $caregiverId = $patient->caregiver_id ?? $user->id;
 
-        // Create or update today's record for this patient.
-        // All status fields are stored as 'taken' / 'missed' / null (for unknown).
-        $check = MedicineCheck::updateOrCreate(
-            [
-                'patient_id' => $patient->id,
-                'date'       => today(),
-            ],
-            array_merge(
-                [
-                    'caregiver_id' => auth()->id(),
-                ],
-                [
-                    'morning'   => $data['morning']   ?? null,
-                    'afternoon' => $data['afternoon'] ?? null,
-                    'night'     => $data['night']     ?? null,
-                    'breakfast' => $data['breakfast'] ?? null,
-                    'lunch'     => $data['lunch']     ?? null,
-                    'dinner'    => $data['dinner']    ?? null,
-                ]
-            )
-        );
+        // Find today's record for this patient
+        $check = MedicineCheck::where('patient_id', $patient->id)
+            ->whereDate('date', now()->toDateString())
+            ->first();
 
-        return back()->with('success', 'Medicine checklist saved.');
+        if (! $check) {
+            $check = new MedicineCheck();
+            $check->patient_id   = $patient->id;
+            $check->caregiver_id = $caregiverId;
+            $check->date         = now()->toDateString();  // or now() if your column is datetime
+        }
+
+        // Set checkbox values (unchecked -> 0)
+        $check->morning   = $request->boolean('morning')   ? 1 : 0;
+        $check->afternoon = $request->boolean('afternoon') ? 1 : 0;
+        $check->night     = $request->boolean('night')     ? 1 : 0;
+
+        $check->save();
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Medicine checklist updated for today.');
     }
+
 }
