@@ -194,5 +194,8 @@ class DatabaseSeeder extends Seeder
         // (Optional) Registration requests, family members, etc
         // You can use your existing factories freely here, they don't affect relations.
          \App\Models\RegistrationRequest::factory(20)->create();
+
+         
+         \Database\Seeders\BackfillMealsOnMedicineChecksSeeder::class;
     }
 }

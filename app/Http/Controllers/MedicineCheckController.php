@@ -83,6 +83,34 @@ class MedicineCheckController extends Controller
             abort(403, 'No patient record linked to this user.');
         }
 
+<<<<<<< HEAD
+        // We don’t really need patient_id / date from the form, we derive them:
+        // if you still send them, you can keep a simple validate, but it's optional.
+        // $request->validate([...]) could be removed or simplified.
+
+        // Map each checkbox -> 'taken' or 'missed'
+        $slots = ['morning', 'afternoon', 'night', 'breakfast', 'lunch', 'dinner'];
+
+        $values = [];
+        foreach ($slots as $slot) {
+            // if checkbox is present => taken, else missed (or null if you prefer "unknown")
+            $values[$slot] = $request->has($slot) ? 'taken' : 'missed';
+        }
+
+        $check = MedicineCheck::updateOrCreate(
+            [
+                'patient_id' => $patient->id,
+                'date'       => today(),
+            ],
+            array_merge(
+                [
+                    // if you have an Employee relation, use employee id, otherwise user id is fine
+                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
+                ],
+                $values
+            )
+        );
+=======
         $request->validate([
             'morning'   => 'nullable|boolean',
             'afternoon' => 'nullable|boolean',
@@ -90,6 +118,7 @@ class MedicineCheckController extends Controller
         ]);
 
         $today = now()->toDateString();
+>>>>>>> 1600992e192a5aa170e768c25b53ba78f0e23e67
 
         MedicineCheck::updateOrCreate(
             [
