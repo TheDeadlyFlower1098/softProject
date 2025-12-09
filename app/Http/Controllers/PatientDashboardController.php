@@ -6,6 +6,8 @@ use App\Models\Appointment;
 use App\Models\MedicineCheck;
 use Illuminate\Http\Request;
 use App\Models\Prescription;
+use Illuminate\Support\Carbon;
+use App\Models\User;
 
 class PatientDashboardController extends Controller
 {
