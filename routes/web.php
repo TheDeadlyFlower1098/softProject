@@ -58,18 +58,6 @@ Route::get('/dataviewer', [DataViewerController::class, 'index'])
 */
 Route::middleware('guest')->group(function () {
 
-    // Registration approval view (if you really want it visible when logged out)
-    Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
-        ->name('registration.approval');
-
-    Route::post('/registration-approval/{id}/approve',
-        [RegistrationApprovalController::class, 'approve'])
-        ->name('registration.approve');
-
-    Route::post('/registration-approval/{id}/deny',
-        [RegistrationApprovalController::class, 'deny'])
-        ->name('registration.deny');
-
     // Login
     Route::get('/login', function () {
         return view('login');
@@ -281,23 +269,23 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 */
 Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
 
-    // Admin registrations list
+    // Admin registrations list (you can keep this or drop it; route name is fine)
     Route::get('/admin/registrations',
         [RegistrationApprovalController::class, 'index'])
         ->name('admin.registrations');
 
-    // Admin registration approval page (same controller as above)
+    // ✅ This is now THE registration approval page
     Route::get('/admin/registration-approval',
         [RegistrationApprovalController::class, 'index'])
-        ->name('registration.approval.admin');
+        ->name('registration.approval');
 
     Route::post('/admin/registration-approval/{id}/approve',
         [RegistrationApprovalController::class, 'approve'])
-        ->name('registration.approve.admin');
+        ->name('registration.approve');
 
     Route::post('/admin/registration-approval/{id}/deny',
         [RegistrationApprovalController::class, 'deny'])
-        ->name('registration.deny.admin');
+        ->name('registration.deny');
 });
 
 
