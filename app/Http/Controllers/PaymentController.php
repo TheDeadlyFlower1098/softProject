@@ -70,159 +70,54 @@ class PaymentController extends Controller
  * --------------------------------------*/
 
 // GET /payments - just show empty form + auto patient if possible
-    public function showForm(Request $request)
+    public function adminIndex()
     {
-        $user    = $request->user();
-        $patient = null;
+        // Grab all patients; eager-load user if you want their email, etc.
+        $patients = Patient::with('user')->orderBy('patient_name')->get();
 
-        if ($user && $user->role) {
-            $roleName = $user->role->name;
+        $rows = $patients->map(function ($patient) {
+            // Core charges from your helper
+            $charges = $this->buildSummaryForPatient($patient->id);
 
-            if ($roleName === 'Family') {
-                $familyLink = $user->familyMember;
+            // Sum of all payments made so far
+            $totalPaid = Payment::where('patient_id', $patient->id)->sum('amount');
 
-                if (! $familyLink || ! $familyLink->patient) {
-                    abort(403, 'No linked patient found for this family account.');
-                }
+            $remaining = max($charges['total'] - $totalPaid, 0);
 
-                $patient = $familyLink->patient;
+            return [
+                'patient'           => $patient,
+                'total'             => $charges['total'],
+                'totalPaid'         => $totalPaid,
+                'remaining'         => $remaining,
+                'days'              => $charges['days'],
+                'appointmentsCount' => $charges['appointmentsCount'],
+                'doseCount'         => $charges['doseCount'],
+            ];
+        });
 
-            } elseif ($roleName === 'Patient') {
-                $patient = $user->patient;
-
-                if (! $patient) {
-                    abort(403, 'No patient record linked to this account.');
-                }
-            }
-        }
-
-        // no summary yet – user will hit "ok" first
         return view('payments', [
-            'patient' => $patient,
+            'rows' => $rows,
         ]);
     }
 
-    // POST /payments - calculate summary for this patient
-    public function calculateFromForm(Request $request)
+    /**
+     * Admin action: record an in-person cash payment.
+     */
+    public function recordPayment(Request $request, Patient $patient)
     {
-        $user = $request->user();
-        $patientId = null;
-
-        if ($user && $user->role) {
-            $roleName = $user->role->name;
-
-            if ($roleName === 'Family') {
-                $familyLink = $user->familyMember;
-
-                if (! $familyLink || ! $familyLink->patient) {
-                    abort(403, 'No linked patient found for this family account.');
-                }
-
-                $patientId = $familyLink->patient_id;
-
-            } elseif ($roleName === 'Patient') {
-                $patient = $user->patient;
-
-                if (! $patient) {
-                    abort(403, 'No patient record linked to this account.');
-                }
-
-                $patientId = $patient->id;
-            }
-        }
-
-        // Admin / Supervisor / others: manual patient_id
-        if (! $patientId) {
-            $validated = $request->validate([
-                'patient_id' => ['required', 'integer', 'exists:patients,id'],
-            ]);
-
-            $patientId = (int) $validated['patient_id'];
-        }
-
-        // Base charges from stays/appointments/meds
-        $charges = $this->buildSummaryForPatient($patientId);
-
-        // Payments so far
-        $totalPaid = Payment::where('patient_id', $patientId)->sum('amount');
-        $remaining = max($charges['total'] - $totalPaid, 0);
-
-        $summary = array_merge($charges, [
-            'totalPaid' => $totalPaid,
-            'remaining' => $remaining,
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        $patient = $charges['patient'];
-
-        return view('payments', compact('summary', 'patient'));
-    }
-
-    // POST /payments/pay - record a payment and show updated summary
-    public function makePayment(Request $request)
-    {
-        $user = $request->user();
-        $patientId = null;
-
-        if ($user && $user->role) {
-            $roleName = $user->role->name;
-
-            if ($roleName === 'Family') {
-                $familyLink = $user->familyMember;
-
-                if (! $familyLink || ! $familyLink->patient) {
-                    abort(403, 'No linked patient found for this family account.');
-                }
-
-                $patientId = $familyLink->patient_id;
-
-            } elseif ($roleName === 'Patient') {
-                $patient = $user->patient;
-
-                if (! $patient) {
-                    abort(403, 'No patient record linked to this account.');
-                }
-
-                $patientId = $patient->id;
-            }
-        }
-
-        // Admin / others can post patient_id from the form
-        if (! $patientId) {
-            $validatedIds = $request->validate([
-                'patient_id' => ['required', 'integer', 'exists:patients,id'],
-            ]);
-
-            $patientId = (int) $validatedIds['patient_id'];
-        }
-
-        // Validate payment amount
-        $validated = $request->validate([
-            'payment_amount' => ['required', 'numeric', 'min:0.01'],
-        ]);
-
-        $amount = (float) $validated['payment_amount'];
-
-        // Store the payment
         Payment::create([
-            'patient_id'  => $patientId,
-            'amount'      => $amount,
-            'description' => 'Manual payment',
+            'patient_id'  => $patient->id,
+            'amount'      => $data['amount'],
+            'description' => 'In-person cash payment',
             'paid_at'     => now(),
         ]);
 
-        // Rebuild summary with new payment included
-        $charges = $this->buildSummaryForPatient($patientId);
-        $totalPaid = Payment::where('patient_id', $patientId)->sum('amount');
-        $remaining = max($charges['total'] - $totalPaid, 0);
-
-        $summary = array_merge($charges, [
-            'totalPaid' => $totalPaid,
-            'remaining' => $remaining,
-        ]);
-
-        $patient = $charges['patient'];
-
-        return view('payments', compact('summary', 'patient'))
-            ->with('success', 'Payment recorded successfully.');
+        return redirect()
+            ->route('payments')
+            ->with('success', 'Payment recorded for '.$patient->patient_name);
     }
 }
