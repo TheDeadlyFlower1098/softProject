@@ -2,9 +2,8 @@
 
 @section('title', 'Payments')
 
-@section('content')<!DOCTYPE html>
-
-
+@section('content')
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -51,10 +50,8 @@
       flex: 1 1 0;
       background: #bfddb1; /* light green */
       border: 1px solid #8aa172;
-      padding: 40px 60px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      padding: 20px;
+      overflow-x: auto;
     }
 
     .right-panel {
@@ -66,78 +63,61 @@
       font-size: 14px;
     }
 
-    .patient-form {
+    .payments-table {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 30px;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: #000;
     }
 
-    .patient-row {
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .payments-table th,
+    .payments-table td {
+      border: 1px solid rgba(0,0,0,0.15);
+      padding: 6px 8px;
+      text-align: left;
     }
 
-    .patient-label {
+    .payments-table th {
       background: #7da4e3;
-      padding: 8px 18px;
-      min-width: 110px;
-      border: 1px solid #5c729c;
-      text-align: center;
+      color: #fff;
+      font-weight: 600;
     }
 
-    .patient-input {
-      width: 200px;
-      height: 30px;
-      border: 1px solid #808f63;
-      background: #d6e6b7;
-    }
-
-    .button-row {
-      align-self: center;
-      display: flex;
-      gap: 35px;
-      margin-top: 10px;
+    .payments-table td.numeric {
+      text-align: right;
     }
 
     .btn {
       background: #9bbf61;
       border: 1px solid #6e8642;
-      padding: 6px 28px;
-      font-size: 16px;
+      padding: 4px 10px;
+      font-size: 13px;
       cursor: pointer;
     }
 
-    .update-row {
-      align-self: center;
-      margin-top: 10px;
+    .amount-input {
+      width: 80px;
+      height: 24px;
+      border: 1px solid #808f63;
+      background: #d6e6b7;
+      font-size: 13px;
+      padding: 2px 4px;
     }
 
-    .summary-title {
-      font-weight: bold;
-      font-size: 18px;
+    .flash-success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 8px 10px;
+      border-radius: 4px;
       margin-bottom: 10px;
-    }
-
-    .summary-total {
-      font-size: 22px;
-      margin-bottom: 12px;
-    }
-
-    .summary-list {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    .summary-list li {
-      margin-bottom: 6px;
+      font-size: 13px;
     }
 
     .error {
       color: darkred;
-      margin-bottom: 10px;
+      font-size: 12px;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -146,56 +126,102 @@
     <h1 class="title">Payment</h1>
 
     <div class="content-row">
-      <!-- Left green area -->
+      <!-- Left: table of all patients -->
       <div class="left-panel">
-        <form class="patient-form" action="{{ route('payments.calculate') }}" method="POST">
-          @csrf
-
-          {{-- show validation error --}}
-          @error('patient_id')
-            <div class="error">{{ $message }}</div>
-          @enderror
-
-          <div class="patient-row">
-            <span class="patient-label">Patient ID</span>
-            <input
-              class="patient-input"
-              type="number"
-              name="patient_id"
-              value="{{ old('patient_id') }}"
-              required
-            />
+        @if(session('success'))
+          <div class="flash-success">
+            {{ session('success') }}
           </div>
+        @endif
 
-          <div class="button-row">
-            <button type="submit" class="btn">ok</button>
-            <button type="reset" class="btn">cancel</button>
-          </div>
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Days</th>
+              <th>Appointments</th>
+              <th>Doses</th>
+              <th>Original<br>charges</th>
+              <th>Paid<br>so far</th>
+              <th>Remaining</th>
+              <th>Record payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($rows as $row)
+              @php
+                $patient   = $row['patient'];
+                $remaining = $row['remaining'];
+              @endphp
+              <tr>
+                <td>
+                  {{ $patient->patient_name }}
+                  <br>
+                  <small>ID: {{ $patient->id }}</small>
+                </td>
+                <td class="numeric">{{ $row['days'] }}</td>
+                <td class="numeric">{{ $row['appointmentsCount'] }}</td>
+                <td class="numeric">{{ $row['doseCount'] }}</td>
+                <td class="numeric">${{ number_format($row['total'], 2) }}</td>
+                <td class="numeric">${{ number_format($row['totalPaid'], 2) }}</td>
+                <td class="numeric">${{ number_format($row['remaining'], 2) }}</td>
+                <td>
+                  <form action="{{ route('payments.pay', $patient->id) }}" method="POST">
+                    @csrf
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      name="amount"
+                      class="amount-input"
+                      placeholder="0.00"
+                      @if($remaining <= 0) disabled @endif
+                    >
+                    <button type="submit" class="btn" @if($remaining <= 0) disabled @endif>
+                      Pay
+                    </button>
 
-          <div class="update-row">
-            <button type="submit" class="btn">update</button>
-          </div>
-        </form>
+                    @error('amount')
+                      {{-- This will show the last validation error; fine for a school project --}}
+                      <div class="error">{{ $message }}</div>
+                    @enderror
+                  </form>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="8">No patients found.</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
       </div>
 
-      <!-- Right tall blue area (summary) -->
+      <!-- Right: info panel -->
       <div class="right-panel">
-        @isset($summary)
-          <div class="summary-title">Total Due</div>
-          <div class="summary-total">${{ number_format($summary['total'], 2) }}</div>
-
-          <ul class="summary-list">
-            <li><strong>Patient:</strong> {{ $summary['patient']->id }} - {{ $summary['patient']->name ?? '' }}</li>
-            <li><strong>Days:</strong> {{ $summary['days'] }} x $10 = ${{ $summary['dailyCharge'] }}</li>
-            <li><strong>Appointments:</strong> {{ $summary['appointmentsCount'] }} x $50 = ${{ $summary['appointmentCharge'] }}</li>
-            <li><strong>Medicine doses:</strong> {{ $summary['doseCount'] }} x $5 = ${{ $summary['medicineCharge'] }}</li>
-            <li><strong>Payment type:</strong> Cash only (no taxes)</li>
-          </ul>
-        @else
-          <p>Enter a Patient ID on the left and press <strong>ok</strong> to calculate the total due.</p>
-        @endisset
+        <div class="summary-title" style="font-weight:bold; margin-bottom:8px;">
+          Instructions
+        </div>
+        <p style="margin-bottom:8px;">
+          This page is for <strong>Admin</strong> only.
+        </p>
+        <p style="margin-bottom:8px;">
+          1. Patients pay in person (cash only).<br>
+          2. Find the patient in the table.<br>
+          3. Enter the amount they paid in the
+             <em>Record payment</em> column and press <strong>Pay</strong>.
+        </p>
+        <p style="margin-bottom:8px;">
+          The <strong>Original charges</strong> come from
+          the patient&rsquo;s stay, appointments, and medicine doses.
+        </p>
+        <p>
+          <strong>Remaining</strong> = Original charges minus all recorded
+          payments.
+        </p>
       </div>
     </div>
   </div>
 </body>
 </html>
+@endsection

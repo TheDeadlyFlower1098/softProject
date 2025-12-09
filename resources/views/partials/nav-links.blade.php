@@ -110,12 +110,12 @@
         </a>
     @endif
 
-    {{-- Roles management: Admin only --}}
-    @if($role === 'admin')
+    {{-- Roles management: Admin only (if you made that page) --}}
+    {{-- @if($role === 'admin')
         <a href="{{ route('roles.index') }}" class="{{ nav_active('roles.*') }}">
             Roles
         </a>
-    @endif
+    @endif --}}
 
     {{-- Logout (everyone) --}}
     <form action="{{ route('logout') }}" method="POST" style="margin-top:10px;">
@@ -196,9 +196,9 @@
     @endif
 
     {{-- Roles --}}
-    @if($role === 'admin')
+    {{-- @if($role === 'admin')
         <li><a href="{{ route('roles.index') }}" class="{{ nav_active('roles.*') }}">Roles</a></li>
-    @endif
+    @endif --}}
 
     {{-- Logout --}}
     <li>

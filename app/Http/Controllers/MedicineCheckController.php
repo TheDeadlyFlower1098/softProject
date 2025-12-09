@@ -76,8 +76,8 @@ class MedicineCheckController extends Controller
      */
     public function saveSingle(Request $request)
     {
-        $user    = auth()->user();
-        $patient = $user->patient;   // requires User::patient() relationship
+        $user = auth()->user();
+        $patient = $user->patient;   // assumes User has ->patient relation
 
         if (! $patient) {
             abort(403, 'No patient record linked to this user.');
@@ -239,4 +239,5 @@ class MedicineCheckController extends Controller
             ->route('caregiver.dashboard')
             ->with('success', 'Daily report saved.');
     }
+
 }

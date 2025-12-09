@@ -77,25 +77,30 @@ class RegistrationApprovalController extends Controller
             ]);
         }
 
-        // NEW: link family member to patient based on signup ID
+        // NEW: link family member to patient based on full name from signup
         if ($req->role === 'Family') {
+            // Full name entered on signup (e.g. "John Smith")
+            $fullName = $req->linked_patient_identifier;
 
-            // 1. Find the patient based on what they typed at signup
-            $patient = Patient::where('patient_identifier', $req->linked_patient_identifier)
-                ->orWhere('id', $req->linked_patient_identifier)
-                ->first();
+            // Try to find a patient whose full name matches
+            $patient = Patient::where('patient_name', $fullName)->first();
 
-            if ($patient) {
-                FamilyMember::create([
-                    'user_id'    => $user->id,
-                    'patient_id' => $patient->id,
-                    // you don’t currently capture this on signup, so:
-                    'relation'   => null, // or 'Unknown', or add a field to the form later
-                    // keep family_code in sync with the patient’s family_code
-                    'family_code'=> $patient->family_code,
+            if (! $patient) {
+                // Optional: give the admin helpful feedback instead of silently failing
+                return back()->withErrors([
+                    'approval' => "No patient found with the name '{$fullName}' for family request {$req->email}. 
+                                Make sure the patient is approved first and the name matches exactly."
                 ]);
             }
+
+            FamilyMember::create([
+                'user_id'    => $user->id,
+                'patient_id' => $patient->id,
+                'relation'   => null, // or capture this on signup later
+                'family_code'=> $patient->family_code,
+            ]);
         }
+
 
         return redirect()
             ->back()

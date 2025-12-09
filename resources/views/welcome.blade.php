@@ -136,7 +136,7 @@
             type="text"
             name="linked_patient_identifier"
             id="linked_patient_identifier_input"
-            placeholder="Patient ID Number (for Family Member)"
+            placeholder="John Smith or Patient ID"
             style="display:none;"
           >
         </div>
