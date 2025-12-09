@@ -34,6 +34,7 @@
       background: #d6e6f7;
       padding: 25px 30px;
       margin-top: 20px;
+      color: #000 !important;
     }
 
     .title {
@@ -47,7 +48,7 @@
       align-items: stretch;
     }
 
-    /* LEFT MAIN SCHEDULE AREA */
+    /* LEFT MAIN AREA */
     .left-area {
       flex: 3 1 0;
       background: #bfddb1; /* light green */
@@ -62,6 +63,7 @@
     .top-inputs {
       display: flex;
       gap: 20px;
+      margin-bottom: 10px;
     }
 
     .input-group {
@@ -73,6 +75,7 @@
 
     .input-label {
       font-size: 16px;
+      font-weight: 600;
     }
 
     .top-input {
@@ -80,54 +83,125 @@
       height: 32px;
       border: 1px solid #6f7fa2;
       background: #c9d8ec;
+      padding: 0 8px;
+      color: #000;
     }
 
-    /* column header bar */
-    .column-header {
-      display: flex;
-      width: 100%;
-      height: 60px;
+    .caregiver-text {
+      flex: 1 1 0;
+      min-height: 32px;
       border: 1px solid #6f7fa2;
       background: #c9d8ec;
-    }
-
-    .column-header div {
-      flex: 1 1 0;
-      border-right: 1px solid #6f7fa2;
-      text-align: center;
-      padding-top: 19px;
-    }
-
-    .column-header div:last-child {
-      border-right: none;
-    }
-
-    /* grid body with vertical lines and small checkboxes */
-    .grid-body {
-      flex: 1 1 auto;
       display: flex;
-      border-left: 1px solid #6f7fa2;
-      border-right: 1px solid #6f7fa2;
-      padding-top: 40px;
+      align-items: center;
+      padding: 0 8px;
+      color: #000;
     }
 
-    .grid-column {
-      flex: 1 1 0;
-      border-right: 1px solid #6f7fa2;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+    /* Activity card / table area (inspired by admin report) */
+    .activity-card{
+      background:#b9d7a9;
+      padding:22px 20px;
+      border-radius:12px;
+      position:relative;
+      box-shadow:0 3px 8px rgba(0,0,0,0.12);
+      margin-top:10px;
     }
 
-    .grid-column:last-child {
-      border-right: none;
+    .tag{
+      background:#8fbd75;
+      padding:8px 18px;
+      border-radius:8px;
+      font-weight:700;
+      font-size:15px;
+      color:white;
+      position:absolute;
+      top:-16px;
+      left:18px;
+      border:1px solid #6ea65b;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
     }
 
-    .grid-checkbox {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      transform: translateY(-5px);
+    .activity-inner{
+      margin-top:32px;
+      background:white;
+      border-radius:10px;
+      padding:16px;
+      border:1px solid #b3c2d1;
+      box-shadow:0 3px 8px rgba(0,0,0,0.06);
+      color:#000;
+    }
+
+    .activity-title{
+      font-weight:700;
+      margin-bottom:8px;
+      font-size:18px;
+    }
+
+    .activity-date{
+      font-size:14px;
+      color:#444;
+      margin-bottom:12px;
+    }
+
+    table.activity-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+      text-align:center;
+    }
+
+    table.activity-table th,
+    table.activity-table td{
+      padding:8px 6px;
+      border:1px solid #c5d0e0;
+      color:#000;
+    }
+
+    table.activity-table th{
+      background:#cfe1f6;
+      font-weight:700;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:8px;
+      font-weight:700;
+      font-size:13px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .badge-taken{
+      background:#8fbd75;
+      color:#fff;
+    }
+
+    .badge-missed{
+      background:#e06f6f;
+      color:#fff;
+    }
+
+    .badge-unknown{
+      background:#ccc;
+      color:#333;
+    }
+
+    .status-text{
+      margin-top:10px;
+      font-weight:600;
+    }
+
+    .status-complete{
+      color:#2e7d32;
+    }
+
+    .status-none{
+      color:#e06f6f;
+    }
+
+    .status-partial{
+      color:#f0ad4e;
     }
 
     .patient-panel {
@@ -138,6 +212,7 @@
       display: flex;
       flex-direction: column;
       gap: 25px;
+      color:#000;
     }
 
     .patient-title {
@@ -184,6 +259,7 @@
       background: #dbe6f5;
       font-size: 16px;
       padding-left: 10px;
+      color:#000;
     }
   </style>
 </head>
@@ -195,86 +271,127 @@
     <div class="layout">
       <!-- LEFT MAIN AREA -->
       <div class="left-area">
-        <!-- date & caregiver -->
-        <div class="top-inputs">
+
+        {{-- Date filter + caregiver name --}}
+        <form method="GET"
+              action="{{ route('dashboard') }}"
+              class="top-inputs">
           <div class="input-group">
             <span class="input-label">Date:</span>
-            <input class="top-input" type="text" value="{{ now()->toDateString() }}" readonly>
+            <input
+              class="top-input"
+              type="date"
+              name="date"
+              value="{{ $selectedDate }}"
+              onchange="this.form.submit()"
+            >
           </div>
+
           <div class="input-group">
-            <span class="input-label">caregiver:</span>
-            <input class="top-input" type="text" value="{{ auth()->user()->name }}" readonly>
-          </div>
-        </div>
-
-        <!-- column headers -->
-        <div class="column-header">
-          <div>Breakfast</div>
-          <div>Lunch</div>
-          <div>Dinner</div>
-          <div>Medicine 1</div>
-          <div>Medicine 2</div>
-          <div>Medicine 3</div>
-        </div>
-
-        <!-- grid body + form -->
-        <form action="{{ route('medicinecheck.saveToday') }}" method="POST">
-          @csrf
-          <div class="grid-body">
-            {{-- Breakfast -> morning --}}
-            <div class="grid-column">
-              <input
-                type="checkbox"
-                name="morning"
-                value="1"
-                class="grid-checkbox"
-                {{ optional($todayMedicineCheck)->morning ? 'checked' : '' }}>
+            <span class="input-label">Caregiver:</span>
+            <div class="caregiver-text">
+              {{ $caregiverName ?? 'Not assigned for this date' }}
             </div>
-
-            {{-- Lunch -> afternoon --}}
-            <div class="grid-column">
-              <input
-                type="checkbox"
-                name="afternoon"
-                value="1"
-                class="grid-checkbox"
-                {{ optional($todayMedicineCheck)->afternoon ? 'checked' : '' }}>
-            </div>
-
-            {{-- Dinner -> night --}}
-            <div class="grid-column">
-              <input
-                type="checkbox"
-                name="night"
-                value="1"
-                class="grid-checkbox"
-                {{ optional($todayMedicineCheck)->night ? 'checked' : '' }}>
-            </div>
-
-            {{-- Medicine 1/2/3: visual only for now --}}
-            <div class="grid-column">
-              <input type="checkbox" class="grid-checkbox" disabled>
-            </div>
-
-            <div class="grid-column">
-              <input type="checkbox" class="grid-checkbox" disabled>
-            </div>
-
-            <div class="grid-column">
-              <input type="checkbox" class="grid-checkbox" disabled>
-            </div>
-          </div>
-
-          <div style="margin-top:15px; text-align:right;">
-            <button type="submit"
-                    style="padding:6px 16px; border:1px solid #4f6ea2; background:#c9d8ec; cursor:pointer;">
-              Save
-            </button>
           </div>
         </form>
+
+        {{-- MEDICINE / MEAL TABLE --}}
+        <section class="activity-card">
+          <div class="tag">Medicine & Meals</div>
+
+          <div class="activity-inner">
+            @if(!$todayMedicineCheck)
+              <div class="activity-title">
+                No record found for this date.
+              </div>
+              <p>
+                There is no medicine / meal checklist recorded for
+                {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
+              </p>
+            @else
+              <div class="activity-title">
+                Checklist for {{ $patient->patient_name }}
+              </div>
+              <div class="activity-date">
+                Date: {{ \Illuminate\Support\Carbon::parse($todayMedicineCheck->date)->format('M d, Y') }}
+              </div>
+
+              @php
+                $slots = [
+                  'morning'   => 'Morning Medicine',
+                  'afternoon' => 'Afternoon Medicine',
+                  'night'     => 'Night Medicine',
+                  'breakfast' => 'Breakfast',
+                  'lunch'     => 'Lunch',
+                  'dinner'    => 'Dinner',
+                ];
+
+                $takenCount = 0;
+                $missedCount = 0;
+                $totalSlots = 0;
+              @endphp
+
+              <table class="activity-table">
+                <thead>
+                  <tr>
+                    <th>Check</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($slots as $key => $label)
+                    @php
+                      $value = optional($todayMedicineCheck)->{$key};
+                      $totalSlots++;
+
+                      if ($value === 'taken') $takenCount++;
+                      if ($value === 'missed') $missedCount++;
+
+                      $class = $value === 'taken'
+                        ? 'badge-taken'
+                        : ($value === 'missed'
+                            ? 'badge-missed'
+                            : 'badge-unknown');
+
+                      $text = $value ?? 'unknown';
+                    @endphp
+                    <tr>
+                      <td>{{ $label }}</td>
+                      <td>
+                        <span class="badge {{ $class }}">
+                          {{ ucfirst($text) }}
+                        </span>
+                      </td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+
+              @php
+                $statusClass = 'status-partial';
+                $statusText  = 'Some checks completed';
+
+                if ($takenCount === 0 && $missedCount === 0) {
+                    $statusClass = 'status-partial';
+                    $statusText  = 'No clear data recorded';
+                } elseif ($takenCount === $totalSlots) {
+                    $statusClass = 'status-complete';
+                    $statusText  = 'All checks completed ✅';
+                } elseif ($missedCount === $totalSlots) {
+                    $statusClass = 'status-none';
+                    $statusText  = 'All checks missed';
+                }
+              @endphp
+
+              <p class="status-text {{ $statusClass }}">
+                {{ $statusText }}
+              </p>
+            @endif
+          </div>
+        </section>
       </div>
 
-      <!-- RIGHT PATIENT INFO PANEL -->
+      <!-- RIGHT PATIENT INFO PANEL (unchanged) -->
       <div class="patient-panel">
         <div class="patient-title-wrapper">
           <div class="patient-title">
@@ -316,15 +433,15 @@
         <h3>Medicine (today)</h3>
 
         @if(!$todayMedicineCheck)
-          <p>No medicine checklist recorded yet for today.</p>
+          <p>No medicine checklist recorded yet for this date.</p>
         @else
           <ul class="med-status-list">
-            <li>Morning: {{ $todayMedicineCheck->morning ? 'Taken' : 'Not taken' }}</li>
-            <li>Afternoon: {{ $todayMedicineCheck->afternoon ? 'Taken' : 'Not taken' }}</li>
-            <li>Night: {{ $todayMedicineCheck->night ? 'Taken' : 'Not taken' }}</li>
+            <li>Morning:   {{ $todayMedicineCheck->morning   ?? 'unknown' }}</li>
+            <li>Afternoon: {{ $todayMedicineCheck->afternoon ?? 'unknown' }}</li>
+            <li>Night:     {{ $todayMedicineCheck->night     ?? 'unknown' }}</li>
           </ul>
-          <p style="font-size: 0.8rem; opacity: 0.8;">
-            Date: {{ $todayMedicineCheck->date->format('Y-m-d') }}
+          <p style="font-size: 0.8rem; opacity: 0.8; margin-top:6px;">
+            Date: {{ \Illuminate\Support\Carbon::parse($todayMedicineCheck->date)->format('Y-m-d') }}
           </p>
         @endif
 
@@ -339,20 +456,20 @@
                 on {{ $latestPrescription->created_at->format('Y-m-d') }}
             </p>
 
-            <table class="med-table" style="width:100%; margin-top:8px; font-size:0.9rem;">
+            <table class="med-table" style="width:100%; margin-top:8px; font-size:0.9rem; border-collapse:collapse;">
                 <thead>
                     <tr>
-                        <th style="text-align:left;">Medicine</th>
-                        <th style="text-align:left;">Dosage</th>
-                        <th style="text-align:left;">Frequency</th>
+                        <th style="text-align:left; border:1px solid #4f6ea2; padding:4px;">Medicine</th>
+                        <th style="text-align:left; border:1px solid #4f6ea2; padding:4px;">Dosage</th>
+                        <th style="text-align:left; border:1px solid #4f6ea2; padding:4px;">Frequency</th>
                     </tr>
                 </thead>
                 <tbody>
                 @foreach($latestPrescription->items as $item)
                     <tr>
-                        <td>{{ $item->name }}</td>
-                        <td>{{ $item->dosage }}</td>
-                        <td>{{ $item->frequency }}</td>
+                        <td style="border:1px solid #4f6ea2; padding:4px;">{{ $item->name }}</td>
+                        <td style="border:1px solid #4f6ea2; padding:4px;">{{ $item->dosage }}</td>
+                        <td style="border:1px solid #4f6ea2; padding:4px;">{{ $item->frequency }}</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -363,3 +480,4 @@
   </div>
 </body>
 </html>
+@endsection
