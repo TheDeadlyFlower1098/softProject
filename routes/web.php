@@ -274,7 +274,6 @@ Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
         [RegistrationApprovalController::class, 'index'])
         ->name('admin.registrations');
 
-    // ✅ This is now THE registration approval page
     Route::get('/admin/registration-approval',
         [RegistrationApprovalController::class, 'index'])
         ->name('registration.approval');
