@@ -17,6 +17,4 @@ class Role extends Model
     {
         return $this->hasMany(\App\Models\User::class);
     }
-
-    public $timestamps = false;
 }

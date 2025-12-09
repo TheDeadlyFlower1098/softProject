@@ -199,8 +199,32 @@
             @forelse($manageableUsers as $user)
               <tr>
                 <td style="border: 1px solid #6f7fa2; padding: 6px;">
-                  {{ $user->name }}
+                    @php
+                        // Try common name patterns first
+                        $displayName = null;
+
+                        if (!empty($user->name)) {
+                            $displayName = $user->name;
+                        } elseif (!empty($user->full_name)) {
+                            $displayName = $user->full_name;
+                        } elseif (!empty($user->first_name) || !empty($user->last_name)) {
+                            $displayName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                        } elseif (!empty($user->email)) {
+                            // Fall back to email if no name fields exist
+                            $displayName = $user->email;
+                        } else {
+                            $displayName = 'Unknown';
+                        }
+                    @endphp
+
+                    <strong>{{ $displayName }}</strong><br>
+                    @if(!empty($user->email) && $displayName !== $user->email)
+                        <small>{{ $user->email }}</small><br>
+                    @endif
+                    <small>User ID: {{ $user->id }}</small>
                 </td>
+
+
                 <td style="border: 1px solid #6f7fa2; padding: 6px;">
                   {{ $user->roleName() ?? '—' }}
                 </td>
