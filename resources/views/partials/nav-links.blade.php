@@ -56,13 +56,6 @@
         </a>
     @endif
 
-    {{-- Additional patient information: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
-        <a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">
-            Additional Info
-        </a>
-    @endif
-
     {{-- Employees page: Admin & Supervisor --}}
     @if(in_array($role, ['admin','supervisor']))
         <a href="{{ route('employees') }}" class="{{ nav_active('employees') }}">
@@ -157,11 +150,6 @@
         <li><a href="{{ route('patients') }}" class="{{ nav_active('patients') }}">Patients</a></li>
     @endif
 
-    {{-- Additional patient information --}}
-    @if(in_array($role, ['admin','supervisor']))
-        <li><a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">Additional Info</a></li>
-    @endif
-
     {{-- Employees --}}
     @if(in_array($role, ['admin','supervisor']))
         <li><a href="{{ route('employees') }}" class="{{ nav_active('employees') }}">Employees</a></li>
@@ -196,9 +184,9 @@
     @endif
 
     {{-- Roles --}}
-    {{-- @if($role === 'admin')
+    @if($role === 'admin')
         <li><a href="{{ route('roles.index') }}" class="{{ nav_active('roles.*') }}">Roles</a></li>
-    @endif --}}
+    @endif
 
     {{-- Logout --}}
     <li>

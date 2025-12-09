@@ -9,11 +9,45 @@ use Illuminate\Validation\Rule;
 
 class PatientController extends Controller
 {
+    /**
+     * Show the list of all patients (with optional search filter).
+     */
     public function index(Request $request)
     {
-        $patients = Patient::with('group')->paginate(20);
-        return response()->json($patients);
+        $search = $request->input('search');
+
+        $patients = Patient::with(['user', 'group'])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $like = '%' . $search . '%';
+
+                    $q->where('patient_name', 'like', $like)
+                      ->orWhere('patient_identifier', 'like', $like)
+                      ->orWhere('emergency_contact_name', 'like', $like)
+                      ->orWhere('emergency_contact_phone', 'like', $like)
+                      // optionally search by linked user name as well
+                      ->orWhereHas('user', function ($uq) use ($like) {
+                          $uq->where('name', 'like', $like);
+                      });
+                });
+            })
+            ->orderBy('patient_name')
+            ->get();
+
+        return view('patientsList', compact('patients'));
     }
+
+    /**
+     * Show the additional information page for a single patient.
+     */
+    public function additional(Patient $patient)
+    {
+        // Route model binding: {patient} in the URL becomes $patient here
+        return view('patientAdditional', [
+            'patient' => $patient,
+        ]);
+    }
+
 
     public function store(Request $request)
     {
@@ -60,4 +94,5 @@ class PatientController extends Controller
         Patient::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
+
 }

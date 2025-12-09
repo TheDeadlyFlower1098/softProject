@@ -17,6 +17,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\DataViewerController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RolesController;
 
 /*
@@ -133,18 +134,20 @@ Route::middleware('auth')->group(function () {
     | Patients and additional information (Admin/Supervisor/Doctor/Caregiver)
     |--------------------------------------------------------------------------
     */
+
     // Patients list (points to patientsList.blade.php)
-    Route::get('/patients', function () {
-        return view('patientsList');
-    })->middleware('role:Admin,Supervisor,Doctor,Caregiver')
-      ->name('patients');
+    Route::get('/patients', [PatientController::class, 'index'])
+        ->middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+        ->name('patients');
 
-    // Additional patient information page (Admin & Supervisor only)
-    Route::get('/patients/additional', function () {
-        return view('patientAdditional');
-    })->middleware('role:Admin,Supervisor')
-      ->name('patients.additional');
-
+    // Additional patient information page (Admin/Supervisor/Doctor/Caregiver)
+    // (you already have this, just keep it)
+    Route::middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+        ->group(function () {
+            Route::get('/patients/{patient}/additional', [PatientController::class, 'additional'])
+                ->name('patients.additional');
+        });
+        
     /*
     |--------------------------------------------------------------------------
     | Employees (Admin & Supervisor)
