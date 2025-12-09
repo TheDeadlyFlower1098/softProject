@@ -17,6 +17,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\DataViewerController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\RolesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +62,21 @@ Route::get('/dataviewer', [DataViewerController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
+
+    Route::get('/registration-approval', function() {
+        return view('registration_approval');
+    });
+
+    Route::get('/registration-approval', [RegistrationApprovalController::class, 'index'])
+        ->name('registration.approval');
+
+    // approve a specific request
+    Route::post('/registration-approval/{id}/approve', [RegistrationApprovalController::class, 'approve'])
+        ->name('registration.approve');
+
+    // deny a specific request
+    Route::post('/registration-approval/{id}/deny', [RegistrationApprovalController::class, 'deny'])
+        ->name('registration.deny');
 
     // Login page
     Route::get('/login', function () {
@@ -219,6 +235,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:Admin')
         ->name('payments.calculate');
 
+    Route::post('/payments/pay', [PaymentController::class, 'makePayment'])
+        ->name('payments.pay');
+
+
     /*
     |--------------------------------------------------------------------------
     | Roster routes
@@ -248,6 +268,11 @@ Route::middleware('auth')->group(function () {
         return view('roles');
     })->middleware('role:Admin')
       ->name('roles.index');
+
+    Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
+    Route::post('/roles', [RolesController::class, 'store'])->name('roles.store');
+    Route::patch('/roles/users/{user}', [RolesController::class, 'updateUserRole'])
+        ->name('roles.users.update');
 
     /*
     |--------------------------------------------------------------------------

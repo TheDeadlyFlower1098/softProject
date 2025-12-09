@@ -279,7 +279,7 @@
                 <span>cle</span>
             </a>
 
-            {{-- Replace your entire UL with this --}}
+            
             <ul class="nav-links">
                 @auth
                     @include('partials.nav-links', ['layout' => 'top'])

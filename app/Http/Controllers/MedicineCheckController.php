@@ -59,7 +59,7 @@ class MedicineCheckController extends Controller
     public function saveForTodayFromDashboard(Request $request)
     {
         $user = auth()->user();
-        $patient = $user->patient;   // requires User::patient() relationship
+        $patient = $user->patient;   // assumes User has ->patient relation
 
         if (! $patient) {
             abort(403, 'No patient record linked to this user.');
@@ -92,6 +92,23 @@ class MedicineCheckController extends Controller
             )
         );
 
-        return back()->with('success', 'Medicine checklist saved.');
+        if (! $check) {
+            $check = new MedicineCheck();
+            $check->patient_id   = $patient->id;
+            $check->caregiver_id = $caregiverId;
+            $check->date         = now()->toDateString();  // or now() if your column is datetime
+        }
+
+        // Set checkbox values (unchecked -> 0)
+        $check->morning   = $request->boolean('morning')   ? 1 : 0;
+        $check->afternoon = $request->boolean('afternoon') ? 1 : 0;
+        $check->night     = $request->boolean('night')     ? 1 : 0;
+
+        $check->save();
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Medicine checklist updated for today.');
     }
+
 }
