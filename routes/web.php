@@ -110,9 +110,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', fn () => view('home'))
         ->name('home');
 
-    // Patient dashboard
+    // Patient dashboard (main route used by nav)
+    Route::get('/dashboard', [PatientDashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // Optional alias, for patient_dashboard URL:
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
         ->name('patient.dashboard');
+
 
     /*
     |--------------------------------------------------------------------------

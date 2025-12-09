@@ -76,67 +76,42 @@ class MedicineCheckController extends Controller
      */
     public function saveSingle(Request $request)
     {
-        $user = auth()->user();
+        $user    = auth()->user();
         $patient = $user->patient;   // assumes User has ->patient relation
 
         if (! $patient) {
             abort(403, 'No patient record linked to this user.');
         }
 
-<<<<<<< HEAD
-        // We don’t really need patient_id / date from the form, we derive them:
-        // if you still send them, you can keep a simple validate, but it's optional.
-        // $request->validate([...]) could be removed or simplified.
+        $today = today()->toDateString();
 
-        // Map each checkbox -> 'taken' or 'missed'
+        // Map each checkbox -> 'taken' or 'missed' (or adjust to booleans if your DB uses tinyints)
         $slots = ['morning', 'afternoon', 'night', 'breakfast', 'lunch', 'dinner'];
 
         $values = [];
         foreach ($slots as $slot) {
-            // if checkbox is present => taken, else missed (or null if you prefer "unknown")
             $values[$slot] = $request->has($slot) ? 'taken' : 'missed';
+            // or: $values[$slot] = $request->boolean($slot);
         }
-
-        $check = MedicineCheck::updateOrCreate(
-            [
-                'patient_id' => $patient->id,
-                'date'       => today(),
-            ],
-            array_merge(
-                [
-                    // if you have an Employee relation, use employee id, otherwise user id is fine
-                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
-                ],
-                $values
-            )
-        );
-=======
-        $request->validate([
-            'morning'   => 'nullable|boolean',
-            'afternoon' => 'nullable|boolean',
-            'night'     => 'nullable|boolean',
-        ]);
-
-        $today = now()->toDateString();
->>>>>>> 1600992e192a5aa170e768c25b53ba78f0e23e67
 
         MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
                 'date'       => $today,
             ],
-            [
-                'caregiver_id' => $user->id,
-                'morning'      => $request->boolean('morning'),
-                'afternoon'    => $request->boolean('afternoon'),
-                'night'        => $request->boolean('night'),
-            ]
+            array_merge(
+                [
+                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
+                ],
+                $values
+            )
         );
 
         return redirect()
             ->route('patient.dashboard')
             ->with('success', 'Medicine checklist saved.');
     }
+
 
     /* ----------------------------------------------------------------------
      |  CAREGIVER DASHBOARD  (list of many patients)
