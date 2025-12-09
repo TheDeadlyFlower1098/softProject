@@ -17,194 +17,206 @@
     {{-- =============== SIDEBAR (dashboard layout) =============== --}}
 
     {{-- Everyone logged in gets Home --}}
-    <a href="{{ route('home') }}" class="{{ nav_active('home') }}">
-        Home
-    </a>
+    @if(Route::has('home'))
+        <a href="{{ route('home') }}" class="{{ nav_active('home') }}">
+            Home
+        </a>
+    @endif
 
     {{-- Patient home: patients only --}}
-    @if($role === 'patient')
+    @if($role === 'patient' && Route::has('dashboard'))
         <a href="{{ route('dashboard') }}" class="{{ nav_active('dashboard') }}">
             Patient Home
         </a>
     @endif
 
-    {{-- Family member home: family only --}}
-    @if($role === 'family')
-        <a href="{{ route('family.home') }}" class="{{ nav_active('family.home') }}">
+    {{-- Family member home: family only (use family.dashboard) --}}
+    @if($role === 'family' && Route::has('family.dashboard'))
+        <a href="{{ route('family.dashboard') }}" class="{{ nav_active('family.dashboard') }}">
             Family Home
         </a>
     @endif
 
-    {{-- Caregiver home: caregivers only --}}
-    @if($role === 'caregiver')
-        <a href="{{ route('caregiver.home') }}" class="{{ nav_active('caregiver.home') }}">
+    {{-- Caregiver home: caregivers only (use caregiver.dashboard) --}}
+    @if($role === 'caregiver' && Route::has('caregiver.dashboard'))
+        <a href="{{ route('caregiver.dashboard') }}" class="{{ nav_active('caregiver.dashboard') }}">
             Caregiver Home
         </a>
     @endif
 
     {{-- Doctor home: doctors only --}}
-    @if($role === 'doctor')
+    @if($role === 'doctor' && Route::has('doctorHome'))
         <a href="{{ route('doctorHome') }}" class="{{ nav_active('doctorHome') }}">
             Doctor Home
         </a>
     @endif
 
     {{-- Patients list: Admin, Supervisor, Doctor, Caregiver --}}
-    @if(in_array($role, ['admin','supervisor','doctor','caregiver']))
+    @if(in_array($role, ['admin','supervisor','doctor','caregiver']) && Route::has('patients'))
         <a href="{{ route('patients') }}" class="{{ nav_active('patients') }}">
             Patients
         </a>
     @endif
 
     {{-- Additional patient information: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('patients.additional'))
         <a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">
             Additional Info
         </a>
     @endif
 
     {{-- Employees page: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('employees'))
         <a href="{{ route('employees') }}" class="{{ nav_active('employees') }}">
             Employees
         </a>
     @endif
 
     {{-- Registration Approval: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('registration.approval'))
         <a href="{{ route('registration.approval') }}" class="{{ nav_active('registration.approval') }}">
             Registration Approval
         </a>
     @endif
 
     {{-- Doctor Appointments (creation / management): Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('doctor.appointments'))
         <a href="{{ route('doctor.appointments') }}" class="{{ nav_active('doctor.appointments') }}">
             Doctor Appointments
         </a>
     @endif
 
     {{-- Roster (view only): everyone logged in --}}
-    <a href="{{ route('roster.dashboard') }}" class="{{ nav_active('roster.dashboard') }}">
-        Roster
-    </a>
+    @if(Route::has('roster.dashboard'))
+        <a href="{{ route('roster.dashboard') }}" class="{{ nav_active('roster.dashboard') }}">
+            Roster
+        </a>
+    @endif
 
     {{-- New Roster: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('roster.new'))
         <a href="{{ route('roster.new') }}" class="{{ nav_active('roster.new') }}">
             New Roster
         </a>
     @endif
 
-    {{-- Admin Report: Admin & Supervisor --}}
-    @if(in_array($role, ['admin','supervisor']))
+    {{-- Admin Report: Admin & Supervisor (only if route exists) --}}
+    @if(in_array($role, ['admin','supervisor']) && Route::has('admin.report'))
         <a href="{{ route('admin.report') }}" class="{{ nav_active('admin.report') }}">
             Admin Report
         </a>
     @endif
 
     {{-- Payments: Admin only --}}
-    @if($role === 'admin')
+    @if($role === 'admin' && Route::has('payments'))
         <a href="{{ route('payments') }}" class="{{ nav_active('payments') }}">
             Payments
         </a>
     @endif
 
-    {{-- Roles management: Admin only (if you made that page) --}}
-    {{-- @if($role === 'admin')
-        <a href="{{ route('roles.index') }}" class="{{ nav_active('roles.*') }}">
+    {{-- (Optional) Roles management: Admin only --}}
+    @if($role === 'admin' && Route::has('roles.index'))
+        <a href="{{ route('roles.index') }}" class="{{ nav_active('roles.index') }}">
             Roles
         </a>
-    @endif --}}
+    @endif
 
     {{-- Logout (everyone) --}}
-    <form action="{{ route('logout') }}" method="POST" style="margin-top:10px;">
-        @csrf
-        <button type="submit"
-                style="width:100%; padding:8px; border-radius:6px; border:0; cursor:pointer; background:#e06666; color:#fff;">
-            Logout
-        </button>
-    </form>
+    @if(Route::has('logout'))
+        <form action="{{ route('logout') }}" method="POST" style="margin-top:10px;">
+            @csrf
+            <button type="submit"
+                    style="width:100%; padding:8px; border-radius:6px; border:0; cursor:pointer; background:#e06666; color:#fff;">
+                Logout
+            </button>
+        </form>
+    @endif
 
 @else
     {{-- =============== TOP NAV (home page) =============== --}}
     {{-- These are wrapped in <ul class="nav-links"> in your home.blade --}}
 
-    <li><a href="{{ route('home') }}" class="{{ nav_active('home') }}">Home</a></li>
+    @if(Route::has('home'))
+        <li><a href="{{ route('home') }}" class="{{ nav_active('home') }}">Home</a></li>
+    @endif
 
     {{-- Patient home --}}
-    @if($role === 'patient')
+    @if($role === 'patient' && Route::has('dashboard'))
         <li><a href="{{ route('dashboard') }}" class="{{ nav_active('dashboard') }}">Patient Home</a></li>
     @endif
 
     {{-- Family home --}}
-    @if($role === 'family')
-        <li><a href="{{ route('family.home') }}" class="{{ nav_active('family.home') }}">Family Home</a></li>
+    @if($role === 'family' && Route::has('family.dashboard'))
+        <li><a href="{{ route('family.dashboard') }}" class="{{ nav_active('family.dashboard') }}">Family Home</a></li>
     @endif
 
     {{-- Caregiver home --}}
-    @if($role === 'caregiver')
-        <li><a href="{{ route('caregiver.home') }}" class="{{ nav_active('caregiver.home') }}">Caregiver Home</a></li>
+    @if($role === 'caregiver' && Route::has('caregiver.dashboard'))
+        <li><a href="{{ route('caregiver.dashboard') }}" class="{{ nav_active('caregiver.dashboard') }}">Caregiver Home</a></li>
     @endif
 
     {{-- Doctor home --}}
-    @if($role === 'doctor')
+    @if($role === 'doctor' && Route::has('doctorHome'))
         <li><a href="{{ route('doctorHome') }}" class="{{ nav_active('doctorHome') }}">Doctor Home</a></li>
     @endif
 
     {{-- Patients list --}}
-    @if(in_array($role, ['admin','supervisor','doctor','caregiver']))
+    @if(in_array($role, ['admin','supervisor','doctor','caregiver']) && Route::has('patients'))
         <li><a href="{{ route('patients') }}" class="{{ nav_active('patients') }}">Patients</a></li>
     @endif
 
     {{-- Additional patient information --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('patients.additional'))
         <li><a href="{{ route('patients.additional') }}" class="{{ nav_active('patients.additional') }}">Additional Info</a></li>
     @endif
 
     {{-- Employees --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('employees'))
         <li><a href="{{ route('employees') }}" class="{{ nav_active('employees') }}">Employees</a></li>
     @endif
 
     {{-- Registration Approval --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('registration.approval'))
         <li><a href="{{ route('registration.approval') }}" class="{{ nav_active('registration.approval') }}">Registration Approval</a></li>
     @endif
 
     {{-- Doctor Appointments --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('doctor.appointments'))
         <li><a href="{{ route('doctor.appointments') }}" class="{{ nav_active('doctor.appointments') }}">Doctor Appointments</a></li>
     @endif
 
     {{-- Roster (view) --}}
-    <li><a href="{{ route('roster.dashboard') }}" class="{{ nav_active('roster.dashboard') }}">Roster</a></li>
+    @if(Route::has('roster.dashboard'))
+        <li><a href="{{ route('roster.dashboard') }}" class="{{ nav_active('roster.dashboard') }}">Roster</a></li>
+    @endif
 
     {{-- New Roster --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('roster.new'))
         <li><a href="{{ route('roster.new') }}" class="{{ nav_active('roster.new') }}">New Roster</a></li>
     @endif
 
     {{-- Admin Report --}}
-    @if(in_array($role, ['admin','supervisor']))
+    @if(in_array($role, ['admin','supervisor']) && Route::has('admin.report'))
         <li><a href="{{ route('admin.report') }}" class="{{ nav_active('admin.report') }}">Admin Report</a></li>
     @endif
 
     {{-- Payments --}}
-    @if($role === 'admin')
+    @if($role === 'admin' && Route::has('payments'))
         <li><a href="{{ route('payments') }}" class="{{ nav_active('payments') }}">Payments</a></li>
     @endif
 
     {{-- Roles --}}
-    {{-- @if($role === 'admin')
-        <li><a href="{{ route('roles.index') }}" class="{{ nav_active('roles.*') }}">Roles</a></li>
-    @endif --}}
+    @if($role === 'admin' && Route::has('roles.index'))
+        <li><a href="{{ route('roles.index') }}" class="{{ nav_active('roles.index') }}">Roles</a></li>
+    @endif
 
     {{-- Logout --}}
-    <li>
-        <form action="{{ route('logout') }}" method="POST" style="display:inline;">
-            @csrf
-            <button type="submit">Logout</button>
-        </form>
-    </li>
+    @if(Route::has('logout'))
+        <li>
+            <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                @csrf
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+    @endif
 @endif
