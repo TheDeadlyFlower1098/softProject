@@ -227,16 +227,18 @@ Route::middleware('auth')->group(function () {
     | Payments (Admin only)
     |--------------------------------------------------------------------------
     */
-    Route::get('/payments', [PaymentController::class, 'showForm'])
-        ->middleware('role:Admin')
-        ->name('payments');
+    
 
-    Route::post('/payments', [PaymentController::class, 'calculateFromForm'])
-        ->middleware('role:Admin')
-        ->name('payments.calculate');
+    Route::middleware(['auth', 'role:Admin'])->group(function () {
+        // List all patients + payments
+        Route::get('/payments', [PaymentController::class, 'adminIndex'])
+            ->name('payments');
 
-    Route::post('/payments/pay', [PaymentController::class, 'makePayment'])
-        ->name('payments.pay');
+        // Record a payment for a specific patient
+        Route::post('/payments/{patient}/pay', [PaymentController::class, 'recordPayment'])
+            ->name('payments.pay');
+    });
+
 
 
     /*
