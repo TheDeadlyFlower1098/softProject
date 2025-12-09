@@ -40,7 +40,6 @@ Route::get(
 | Medicine Check Routes (Requires Auth)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth'])->group(function () {
 
     // Patient dashboard
@@ -138,13 +137,36 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/doctor-appointments', fn() => view('doctor_appointments'))
         ->name('doctor.appointments');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | ******* FIXED ROSTER ROUTES (Required by nav-links.blade.php) *******
+    |--------------------------------------------------------------------------
+    */
+
+    // Roster dashboard (nav: route('roster.dashboard'))
+    Route::get('/roster', function () {
+        return view('supervisor_roster'); // or your actual roster view
+    })->name('roster.dashboard');
+
+    // New roster page (nav: route('roster.new'))
+    Route::get('/roster/new', function () {
+        return view('new_roster');
+    })->name('roster.new');
+
+    // Keep legacy routes (safe but optional)
     Route::get('/new-roster', fn() => view('new_roster'))
         ->name('new.roster');
 
     Route::get('/supervisor-roster', fn() => view('supervisor_roster'))
         ->name('supervisor.roster');
 
-    // Family dashboard (role restricted)
+
+    /*
+    |--------------------------------------------------------------------------
+    | Family Dashboard (Role Restricted)
+    |--------------------------------------------------------------------------
+    */
     Route::middleware(['role:Family'])->group(function () {
         Route::get('/family-dashboard',
             [FamilyDashboardController::class, 'index'])

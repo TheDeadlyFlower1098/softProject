@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\MedicineCheck;
 use App\Models\Patient;
+use App\Models\Employee;
+use App\Models\Roster;
 use Illuminate\Http\Request;
 
 class MedicineCheckController extends Controller
@@ -69,7 +71,7 @@ class MedicineCheckController extends Controller
      */
     public function saveSingle(Request $request)
     {
-        $user = auth()->user();
+        $user    = auth()->user();
         $patient = $user->patient;   // requires User::patient() relationship
 
         if (! $patient) {
@@ -109,15 +111,61 @@ class MedicineCheckController extends Controller
     /**
      * GET /caregiver
      * Name: caregiver.dashboard
-     * Shows the caregiver table with all patients.
+     *
+     * Shows the caregiver table with only the patients in this caregiver's
+     * roster group for the selected date.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        // For now we just pull all patients; you can later filter by caregiver, wing, etc.
-        $patients = Patient::with('user')->get();
+        $user = auth()->user();
+
+        // Only allow caregivers
+        if (! $user || optional($user->role)->name !== 'Caregiver') {
+            abort(403);
+        }
+
+        // Which date are we looking at? (default: today)
+        $selectedDate = $request->query('date', now()->toDateString());
+
+        $patients      = collect();
+        $assignedGroup = null;
+        $roster        = null;
+
+        // Find the employee row linked to this caregiver
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if ($employee) {
+            // Get roster for that date
+            $roster = Roster::whereDate('date', $selectedDate)->first();
+
+            if ($roster) {
+                // Work out which caregiver slot they occupy → which group
+                if ($roster->caregiver_1 == $employee->id) {
+                    $assignedGroup = 1;
+                } elseif ($roster->caregiver_2 == $employee->id) {
+                    $assignedGroup = 2;
+                } elseif ($roster->caregiver_3 == $employee->id) {
+                    $assignedGroup = 3;
+                } elseif ($roster->caregiver_4 == $employee->id) {
+                    $assignedGroup = 4;
+                }
+
+                // If assigned to a group, load only those patients
+                if (! is_null($assignedGroup)) {
+                    $patients = Patient::with('user')
+                        ->where('group_id', $assignedGroup)
+                        ->get();
+                }
+            }
+        }
 
         // view: resources/views/caregiver.blade.php
-        return view('caregiver', compact('patients'));
+        return view('caregiver', [
+            'patients'      => $patients,
+            'selectedDate'  => $selectedDate,
+            'roster'        => $roster,
+            'assignedGroup' => $assignedGroup,
+        ]);
     }
 
     /**
@@ -127,7 +175,7 @@ class MedicineCheckController extends Controller
      */
     public function saveMultiple(Request $request)
     {
-        $user = auth()->user();          // caregiver user
+        $user       = auth()->user();          // caregiver user
         $caregiverId = $user->id;
 
         // Big array from form: patients[<id>][field]...
@@ -174,7 +222,7 @@ class MedicineCheckController extends Controller
                     'morning'   => !empty($row['morning']),
                     'afternoon' => !empty($row['afternoon']),
                     'night'     => !empty($row['night']),
-                    // If these columns exist in your DB, you can uncomment:
+                    // Uncomment if you add these columns to medicine_checks:
                     // 'breakfast' => !empty($row['breakfast'] ?? null),
                     // 'lunch'     => !empty($row['lunch'] ?? null),
                     // 'dinner'    => !empty($row['dinner'] ?? null),
