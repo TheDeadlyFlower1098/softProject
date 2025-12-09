@@ -21,6 +21,28 @@ use App\Http\Controllers\RolesController;
 
 /*
 |--------------------------------------------------------------------------
+| Patient Additional Info (Admin + Supervisor)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
+    Route::get('/patients/additional', function () {
+        // Later you can pass a real $patient here.
+        return view('patients_additional');
+    })->name('patients.additional');
+});
+
+/*
+// OPTIONAL: Patients list page (uncomment when you create patients.blade.php)
+Route::middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])->group(function () {
+    Route::get('/patients', function () {
+        return view('patients');
+    })->name('patients');
+});
+*/
+
+/*
+|--------------------------------------------------------------------------
 | Prescription / Appointment Routes
 |--------------------------------------------------------------------------
 */
