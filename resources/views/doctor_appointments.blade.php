@@ -7,7 +7,7 @@
   * { box-sizing: border-box; }
 
   body {
-   background-color: #6791c3ff; 
+    background-color: #6791c3ff; 
     font-family: Arial, Helvetica, sans-serif;
   }
 
@@ -35,6 +35,11 @@
     gap: 16px;
   }
 
+  /* allow textarea row to align to top */
+  .row.textarea-row {
+    align-items: flex-start;
+  }
+
   .label-box {
     width: 150px;
     background: #4378d6;
@@ -50,12 +55,18 @@
   }
 
   .input-box input,
-  .input-box select {
+  .input-box select,
+  .input-box textarea {
     width: 100%;
     padding: 8px 10px;
     border-radius: 4px;
     border: 2px solid #4378d6;
     font-size: 15px;
+  }
+
+  .input-box textarea {
+    min-height: 90px;
+    resize: vertical;
   }
 
   .input-box input[readonly] {
@@ -66,8 +77,6 @@
     margin-left: auto;
     flex: 0 0 280px;
   }
-
-
 
   .buttons {
     margin-top: 26px;
@@ -168,11 +177,17 @@
           required
         >
       </div>
-      <div class="right-text">
-        <small>
-          Changing the date will reload this page and filter the
-          doctor dropdown to the doctor on duty in the roster.
-        </small>
+    </div>
+
+    {{-- Notes (new) --}}
+    <div class="row textarea-row">
+      <div class="label-box">Notes</div>
+      <div class="input-box" style="flex:1;">
+        <textarea
+          name="notes"
+          id="notes"
+          placeholder="Reason for visit, symptoms, etc."
+        >{{ old('notes') }}</textarea>
       </div>
     </div>
 
@@ -201,7 +216,6 @@
   </form>
 </div>
 
-{{-- Simple JS: load patient name and refilter doctors by date --}}
 <script>
   // Fetch patient name when ID loses focus
   document.getElementById('patient_id').addEventListener('blur', function () {

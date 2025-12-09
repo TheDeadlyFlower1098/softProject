@@ -1,43 +1,9 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Appointment Details</title>
-  <style>
-    :root {
-      --bg: #0f1724;
-      --muted: #9aa7bd;
-      --accent: #6ee7b7;
-      --glass: rgba(255, 255, 255, 0.03);
-    }
+@extends('layouts.app')
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui;
-      background: rgba(84, 128, 170, 1);
-      color: #e6eef8;
-    }
+@section('title', 'Doctor Appointment')
 
-    .app {
-      display: flex;
-      min-height: 100vh;
-      padding: 24px;
-      gap: 24px;
-    }
-
-    .sidebar {
-      width: 260px;
-      background: rgb(111, 168, 220);
-      border-radius: 12px;
-      padding: 18px;
-      backdrop-filter: blur(6px);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      flex-shrink: 0;
-    }
+@section('content')
+<style>
 
     .main-content {
       flex: 1;
@@ -310,5 +276,5 @@
 
     </main>
   </div>
-</body>
-</html>
+
+@endsection

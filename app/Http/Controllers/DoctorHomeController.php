@@ -34,8 +34,7 @@ class DoctorHomeController extends Controller
         $user   = auth()->user();
         $userId = $user->id;
 
-        // Determine whether user is doctor or patient.
-        // (uses numeric role_id as in your existing code)
+        // Determine whether user is doctor or patient (existing numeric mapping)
         $isDoctor  = $user->role_id == 2;
         $isPatient = $user->role_id == 1;
 
@@ -72,7 +71,7 @@ class DoctorHomeController extends Controller
      */
     public function appointmentDetails($id)
     {
-        // Load appointment, patient + patient->user + doctor
+        // Load appointment including patient + patient->user + doctor
         $appointment = Appointment::with(['patient.user', 'doctor'])
             ->findOrFail($id);
 
@@ -108,7 +107,7 @@ class DoctorHomeController extends Controller
         if ($roster && $roster->doctor_id) {
             $employee = Employee::find($roster->doctor_id);
             if ($employee && $employee->name) {
-                // We will use Employee as "doctor" here
+                // We will use Employee model as "doctor" here
                 $doctors->push($employee);
             }
         }
@@ -132,6 +131,7 @@ class DoctorHomeController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'doctor_id'  => 'required|exists:employees,id',
             'date'       => 'required|date',
+            'notes'      => 'nullable|string|max:1000', // <-- notes now supported
         ]);
 
         Appointment::create([
@@ -139,7 +139,7 @@ class DoctorHomeController extends Controller
             'doctor_id'  => $data['doctor_id'],
             'date'       => $data['date'],
             'status'     => 'scheduled',
-            'notes'      => null,
+            'notes'      => $data['notes'] ?? null, // <-- save notes
         ]);
 
         return redirect()
@@ -148,7 +148,7 @@ class DoctorHomeController extends Controller
     }
 
     /**
-     * Small JSON endpoint for patient lookup by ID (Admin + Supervisor only).
+     * Small JSON endpoint for patient lookup by ID.
      * GET /api/patients/{patient}
      */
     public function lookupPatient(Patient $patient)
@@ -157,7 +157,10 @@ class DoctorHomeController extends Controller
 
         return response()->json([
             'id'   => $patient->id,
-            'name' => $patient->patient_name,
+            'name' =>
+                $patient->user
+                    ? $patient->user->first_name . ' ' . $patient->user->last_name
+                    : null,
         ]);
     }
 }
