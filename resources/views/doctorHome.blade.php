@@ -1,64 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Doctor Appointments</title>
+@extends('layouts.app')
+
+@section('title', 'Doctor Appointments')
+
+@section('content')
 <style>
-  :root {
-    --bg: #0f1724;
-    --muted: #9aa7bd;
-    --accent: #6ee7b7;
-    --card-bg: rgba(255,255,255,0.05);
-    --button-bg: #4ade80;
-    --button-hover: #22c55e;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Inter, Arial, sans-serif;
-    background: #5466aa;
-    color: #e6eef8;
-  }
-
-  .app {
-    display: flex;
-    min-height: 100vh;
-    gap: 24px;
-    padding: 24px;
-  }
-
-  /* Sidebar */
-  .sidebar {
-    width: 260px;
-    background: rgb(111, 168, 220);
-    border-radius: 12px;
-    padding: 18px;
-    backdrop-filter: blur(6px);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    flex-shrink: 0;
-  }
-  .brand { display:flex; align-items:center; gap:12px; }
-  .logo-img { width:50px; height:50px; border-radius:10px; }
-  .nav { display:flex; flex-direction:column; gap:6px; margin-top:20px; }
-  .nav a {
-    padding:10px;
-    display:flex;
-    align-items:center;
-    color: rgb(182, 215, 168);
-    text-decoration:none;
-    border-radius:8px;
-    font-size:14px;
-    background: rgba(74,113,150,1);
-    border: 2px solid rgb(182,215,168);
-    transition: 0.2s;
-  }
-  .nav a:hover { background: rgba(255,255,255,0.1); }
-  .nav a.active { background: linear-gradient(90deg, rgba(110,231,183,0.12), rgba(110,231,183,0.06)); }
-
-  /* Main content */
   main {
     flex: 1;
     display: flex;
@@ -70,7 +15,7 @@
     width: 100%;
     max-width: 700px;
     padding: 20px;
-    background-color: #6791c3ff; 
+    background-color: #6791c3ff;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(66, 104, 122, 1);
   }
@@ -89,13 +34,13 @@
     border-radius: 8px;
     border: none;
     font-size: 16px;
-    background: var(--card-bg);
+    background: rgba(255,255,255,0.1);
     color: #fff;
   }
 
   button {
     padding: 12px;
-    background-color: var(--button-bg);
+    background-color: #4ade80;
     color: #0f1724;
     border: none;
     border-radius: 8px;
@@ -103,13 +48,13 @@
     cursor: pointer;
     transition: background 0.3s;
   }
-  button:hover { background-color: var(--button-hover); }
+  button:hover { background-color: #22c55e; }
 
   .appointments { margin-top: 20px; }
   .appointment {
     padding: 15px;
-    background: var(--card-bg);
-    border-left: 4px solid var(--accent);
+    background: rgba(255,255,255,0.06);
+    border-left: 4px solid #6ee7b7;
     margin-bottom: 12px;
     border-radius: 10px;
     transition: transform 0.2s;
@@ -118,112 +63,187 @@
   .appointment:hover { transform: translateY(-2px); }
 
   .appointment h3 { margin: 0 0 5px 0; color: #fff; }
-  .appointment p { margin: 2px 0; color: var(--muted); }
+  .appointment p { margin: 2px 0; color: #cbd5f5; }
+
+  .filters {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .filters label {
+    font-size: 13px;
+    color: #e6eef8;
+    display: block;
+  }
+
+  .filters input {
+    width: 100%;
+  }
+
+  @media (min-width: 600px) {
+    .filters {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 </style>
-</head>
-<body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="logo">
-          <img src="{{ asset('images/sun.png') }}" alt="Logo" class="logo-img">
-        </div>
-        <h1>Dashboard</h1>
-      </div>
-      <nav class="nav">
-        <a href="#" class="active">Appointments</a>
-        <a href="#">Page 2</a>
-        <a href="#">Page 3</a>
-        <a href="#">Page 4</a>
-      </nav>
-    </aside>
 
-    <main>
-      <div class="container">
-        <!-- Search Bar -->
-        <input 
-          type="text" 
-          id="searchInput"
-          placeholder="Search by patient name..."
-          style="
-            width:100%;
-            padding:12px;
-            border-radius:8px;
-            border:none;
-            margin-bottom:20px;
-            font-size:16px;
-            background:rgba(255,255,255,0.1);
-            color:white;
-          "
+<main>
+  <div class="container">
+    {{-- Filters --}}
+    <h1>Appointments</h1>
+
+    <div class="filters">
+      <div>
+        <label for="filterName">Search by Patient / Doctor</label>
+        <input
+          type="text"
+          id="filterName"
+          placeholder="e.g. John, Dr. Smith"
         >
-
-        {{-- Upcoming appointments --}}
-        <div class="appointments" id="upcomingAppointments">
-          <h1>Upcoming Appointments</h1>
-
-          @forelse ($upcomingAppointments as $appointment)
-            <div class="appointment">
-              <h3>
-                {{ $appointment->patient && $appointment->patient->user 
-                    ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name 
-                    : 'No Patient' }}
-              </h3>
-              <p><strong>Date:</strong> {{ $appointment->date }}</p>
-              <p><strong>Reason:</strong> {{ $appointment->notes }}</p>
-
-              <a href="{{ route('appointment.details', $appointment->id) }}"
-                 style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
-                 View Info
-              </a>
-            </div>
-          @empty
-            <p>No upcoming appointments.</p>
-          @endforelse
-        </div>
-
-        {{-- Past appointments --}}
-        <div class="appointments" id="pastAppointments">
-          <h1>Past Appointments</h1>
-
-          @php $pastAppointments = $pastAppointments ?? collect(); @endphp
-
-          @forelse($pastAppointments as $appt)
-            <div class="appointment">
-              <h3>{{ $appt->doctor->name ?? 'No Doctor' }}</h3>
-              <p><strong>Date:</strong> {{ $appt->date }}</p>
-              <p><strong>Status:</strong> {{ $appt->status ?? '—' }}</p>
-
-              @if(!empty($appt->notes))
-                <p><strong>Notes:</strong> {{ $appt->notes }}</p>
-              @endif
-            </div>
-          @empty
-            <div class="appointment">
-              <p><em>No past appointments found.</em></p>
-            </div>
-          @endforelse
-        </div>
       </div>
 
-      <script>
-      document.addEventListener("DOMContentLoaded", function () {
-          const searchInput = document.getElementById("searchInput");
-          const upcomingAppointments = document.getElementById("upcomingAppointments");
+      <div>
+        <label for="filterDate">Search by Date</label>
+        <input
+          type="text"
+          id="filterDate"
+          placeholder="e.g. 2025-12-09"
+        >
+      </div>
 
-          if (!searchInput || !upcomingAppointments) return;
+      <div>
+        <label for="filterNotes">Search by Reason / Status</label>
+        <input
+          type="text"
+          id="filterNotes"
+          placeholder="e.g. check-up, completed"
+        >
+      </div>
+    </div>
 
-          searchInput.addEventListener("input", () => {
-              const filter = searchInput.value.toLowerCase();
-              const cards = upcomingAppointments.getElementsByClassName("appointment");
+    {{-- Upcoming appointments --}}
+    <div class="appointments" id="upcomingAppointments">
+      <h1>Upcoming Appointments</h1>
 
-              Array.from(cards).forEach(card => {
-                  const name = card.querySelector("h3").textContent.toLowerCase();
-                  card.style.display = name.includes(filter) ? "block" : "none";
-              });
-          });
-      });
-      </script>
-    </main>
+      @forelse ($upcomingAppointments as $appointment)
+        @php
+          $patientName = $appointment->patient && $appointment->patient->user
+              ? $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name
+              : 'No Patient';
+
+          $doctorName = $appointment->doctor->name ?? 'Doctor';
+          $status     = $appointment->status ?? 'scheduled';
+          $notes      = $appointment->notes ?? '';
+        @endphp
+
+        <div class="appointment"
+             data-patient="{{ strtolower($patientName) }}"
+             data-doctor="{{ strtolower($doctorName) }}"
+             data-date="{{ strtolower($appointment->date) }}"
+             data-status="{{ strtolower($status) }}"
+             data-notes="{{ strtolower($notes) }}">
+          <h3>{{ $patientName }}</h3>
+          <p><strong>Date:</strong> {{ $appointment->date }}</p>
+          <p><strong>Status:</strong> {{ $status }}</p>
+          @if($notes)
+            <p><strong>Reason:</strong> {{ $notes }}</p>
+          @endif
+
+          <a href="{{ route('appointment.details', $appointment->id) }}"
+             style="position:absolute; top:15px; right:15px; padding:6px 12px; background:#6ee7b7; color:#022; border-radius:6px; text-decoration:none; font-weight:600;">
+             View Info
+          </a>
+        </div>
+      @empty
+        <p>No upcoming appointments.</p>
+      @endforelse
+    </div>
+
+    {{-- Past appointments --}}
+    <div class="appointments" id="pastAppointments">
+      <h1>Past Appointments</h1>
+
+      @php $pastAppointments = $pastAppointments ?? collect(); @endphp
+
+      @forelse($pastAppointments as $appt)
+        @php
+          $docName   = $appt->doctor->name ?? 'No Doctor';
+          $status    = $appt->status ?? '—';
+          $notes     = $appt->notes ?? '';
+          $patientNm = $appt->patient && $appt->patient->user
+              ? $appt->patient->user->first_name . ' ' . $appt->patient->user->last_name
+              : 'No Patient';
+        @endphp
+
+        <div class="appointment"
+             data-patient="{{ strtolower($patientNm) }}"
+             data-doctor="{{ strtolower($docName) }}"
+             data-date="{{ strtolower($appt->date) }}"
+             data-status="{{ strtolower($status) }}"
+             data-notes="{{ strtolower($notes) }}">
+          <h3>{{ $docName }}</h3>
+          <p><strong>Date:</strong> {{ $appt->date }}</p>
+          <p><strong>Status:</strong> {{ $status }}</p>
+
+          @if($notes)
+            <p><strong>Notes:</strong> {{ $notes }}</p>
+          @endif
+        </div>
+      @empty
+        <div class="appointment">
+          <p><em>No past appointments found.</em></p>
+        </div>
+      @endforelse
+    </div>
   </div>
-</body>
-</html>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const filterName  = document.getElementById("filterName");
+      const filterDate  = document.getElementById("filterDate");
+      const filterNotes = document.getElementById("filterNotes");
+
+      const upcomingAppointments = document.getElementById("upcomingAppointments");
+      const pastAppointments     = document.getElementById("pastAppointments");
+
+      if (!upcomingAppointments || !pastAppointments) return;
+
+      const allAppointmentCards = [
+        ...upcomingAppointments.getElementsByClassName("appointment"),
+        ...pastAppointments.getElementsByClassName("appointment"),
+      ];
+
+      function applyFilters() {
+        const nameFilter  = (filterName.value  || "").toLowerCase();
+        const dateFilter  = (filterDate.value  || "").toLowerCase();
+        const notesFilter = (filterNotes.value || "").toLowerCase();
+
+        allAppointmentCards.forEach(card => {
+          const patient = (card.dataset.patient || "").toLowerCase();
+          const doctor  = (card.dataset.doctor  || "").toLowerCase();
+          const date    = (card.dataset.date    || "").toLowerCase();
+          const status  = (card.dataset.status  || "").toLowerCase();
+          const notes   = (card.dataset.notes   || "").toLowerCase();
+
+          // Name filter matches either patient OR doctor
+          const matchesName  = !nameFilter  || patient.includes(nameFilter) || doctor.includes(nameFilter);
+          const matchesDate  = !dateFilter  || date.includes(dateFilter);
+          const matchesNotes = !notesFilter || notes.includes(notesFilter) || status.includes(notesFilter);
+
+          if (matchesName && matchesDate && matchesNotes) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      [filterName, filterDate, filterNotes].forEach(input => {
+        input.addEventListener("input", applyFilters);
+      });
+    });
+  </script>
+</main>
+@endsection

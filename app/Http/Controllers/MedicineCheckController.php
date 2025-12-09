@@ -231,10 +231,10 @@ class MedicineCheckController extends Controller
                     'morning'   => !empty($row['morning']),
                     'afternoon' => !empty($row['afternoon']),
                     'night'     => !empty($row['night']),
-                    // Uncomment if you add these columns to medicine_checks:
-                    // 'breakfast' => !empty($row['breakfast'] ?? null),
-                    // 'lunch'     => !empty($row['lunch'] ?? null),
-                    // 'dinner'    => !empty($row['dinner'] ?? null),
+                    
+                    'breakfast' => !empty($row['breakfast'] ?? null),
+                    'lunch'     => !empty($row['lunch'] ?? null),
+                    'dinner'    => !empty($row['dinner'] ?? null),
                 ]
             );
         }
