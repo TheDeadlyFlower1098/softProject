@@ -33,14 +33,6 @@ Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
     })->name('patients.additional');
 });
 
-/*
-// OPTIONAL: Patients list page (uncomment when you create patients.blade.php)
-Route::middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])->group(function () {
-    Route::get('/patients', function () {
-        return view('patients');
-    })->name('patients');
-});
-*/
 
 /*
 |--------------------------------------------------------------------------
