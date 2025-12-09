@@ -2,21 +2,41 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\User;
+use App\Models\MedicineCheck;
 use App\Models\Patient;
+use App\Models\Employee;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MedicineCheckFactory extends Factory
 {
-    public function definition()
+    protected $model = MedicineCheck::class;
+
+    public function definition(): array
     {
+        $status = [null, 'taken', 'missed'];
+
+        // pick meds first
+        $morning   = $this->faker->randomElement($status);
+        $afternoon = $this->faker->randomElement($status);
+        $night     = $this->faker->randomElement($status);
+
+        // meals roughly mirror meds (so they look realistic)
+        $breakfast = $morning   ?? $this->faker->randomElement($status);
+        $lunch     = $afternoon ?? $this->faker->randomElement($status);
+        $dinner    = $night     ?? $this->faker->randomElement($status);
+
         return [
-            'caregiver_id' => User::inRandomOrder()->first()->id ?? 1,
-            'patient_id' => Patient::inRandomOrder()->first()->id ?? 1,
-            'date' => $this->faker->dateTimeBetween('-10 days','now'),
-            'morning' => $this->faker->boolean(),
-            'afternoon' => $this->faker->boolean(),
-            'night' => $this->faker->boolean(),
+            'patient_id'   => Patient::inRandomOrder()->value('id') ?? Patient::factory(),
+            'caregiver_id' => Employee::inRandomOrder()->value('id') ?? null,
+            'date'         => $this->faker->dateTimeBetween('-7 days', 'now'),
+
+            'morning'      => $morning,
+            'afternoon'    => $afternoon,
+            'night'        => $night,
+
+            'breakfast'    => $breakfast,
+            'lunch'        => $lunch,
+            'dinner'       => $dinner,
         ];
     }
 }

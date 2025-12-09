@@ -66,7 +66,7 @@
     .nav-links {
         display: flex;
         align-items: center;
-        gap: 0.6rem;        /* smaller gap so more buttons fit */
+        gap: 0.3rem;        /* smaller gap so more buttons fit */
         list-style: none;
         margin: 0;
         padding: 0;
