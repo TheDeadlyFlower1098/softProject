@@ -38,6 +38,7 @@
     .title {
       font-size: 48px;
       margin-bottom: 25px;
+      color: black;
     }
 
     .content-row {
@@ -137,14 +138,14 @@
         <table class="payments-table">
           <thead>
             <tr>
-              <th>Patient</th>
-              <th>Days</th>
-              <th>Appointments</th>
-              <th>Doses</th>
-              <th>Original<br>charges</th>
-              <th>Paid<br>so far</th>
-              <th>Remaining</th>
-              <th>Record payment</th>
+              <th style="color: black;">Patient</th>
+              <th style="color: black;">Days</th>
+              <th style="color: black;">Appointments</th>
+              <th style="color: black;">Doses</th>
+              <th style="color: black;">Original<br>charges</th>
+              <th style="color: black;">Paid<br>so far</th>
+              <th style="color: black;">Remaining</th>
+              <th style="color: black;">Record payment</th>
             </tr>
           </thead>
           <tbody>
