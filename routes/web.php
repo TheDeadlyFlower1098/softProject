@@ -22,20 +22,6 @@ use App\Http\Controllers\RolesController;
 
 /*
 |--------------------------------------------------------------------------
-| Patient Additional Info (Admin + Supervisor)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
-    Route::get('/patients/additional', function () {
-        // Later you can pass a real $patient here.
-        return view('patients_additional');
-    })->name('patients.additional');
-});
-
-
-/*
-|--------------------------------------------------------------------------
 | Prescription / Appointment Routes
 |--------------------------------------------------------------------------
 */
@@ -103,10 +89,7 @@ Route::middleware('guest')->group(function () {
 */
 Route::middleware('auth')->group(function () {
 
-    // Generic dashboards / views
-    Route::get('/dashboard', fn () => view('patient_dashboard'))
-        ->name('dashboard');
-
+    // Home (generic)
     Route::get('/home', fn () => view('home'))
         ->name('home');
 
@@ -114,10 +97,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [PatientDashboardController::class, 'index'])
         ->name('dashboard');
 
-    // Optional alias, for patient_dashboard URL:
+    // Optional alias, for /patient_dashboard URL:
     Route::get('/patient_dashboard', [PatientDashboardController::class, 'index'])
         ->name('patient.dashboard');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -127,17 +109,16 @@ Route::middleware('auth')->group(function () {
 
     // Patients list (points to patientsList.blade.php)
     Route::get('/patients', [PatientController::class, 'index'])
-        ->middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+        ->middleware(['role:Admin,Supervisor,Doctor,Caregiver'])
         ->name('patients');
 
-    // Additional patient information page (Admin/Supervisor/Doctor/Caregiver)
-    // (you already have this, just keep it)
-    Route::middleware(['auth', 'role:Admin,Supervisor,Doctor,Caregiver'])
+    // Additional patient information page
+    Route::middleware(['role:Admin,Supervisor,Doctor,Caregiver'])
         ->group(function () {
             Route::get('/patients/{patient}/additional', [PatientController::class, 'additional'])
                 ->name('patients.additional');
         });
-        
+
     /*
     |--------------------------------------------------------------------------
     | Employees (Admin & Supervisor)
@@ -155,17 +136,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Doctor appointments (created by Admin & Supervisor)
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/doctor-appointments', function () {
-        return view('doctor_appointments');
-    })->middleware('role:Admin,Supervisor')
-      ->name('doctor.appointments');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Medicine check routes
+    | Medicine check routes (patient self-check)
     |--------------------------------------------------------------------------
     */
     Route::post(
@@ -173,15 +144,11 @@ Route::middleware('auth')->group(function () {
         [MedicineCheckController::class, 'saveSingle']
     )->name('medicinecheck.saveSingle');
 
-    // Caregiver dashboard + save
-    Route::get('/caregiver', [MedicineCheckController::class, 'dashboard'])
-        ->name('caregiver.dashboard');
-
-    Route::post('/caregiver/save-today',
-        [MedicineCheckController::class, 'saveMultiple'])
-        ->name('caregiver.saveToday');
-
-    // Roster routes (controller itself can further restrict create/store)
+    /*
+    |--------------------------------------------------------------------------
+    | Roster routes (controller itself can further restrict create/store)
+    |--------------------------------------------------------------------------
+    */
     Route::get('/roster', [RosterController::class, 'dashboard'])
         ->name('roster.dashboard');
 
@@ -191,7 +158,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/roster', [RosterController::class, 'store'])
         ->name('roster.store');
 
-    // Logout
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -207,10 +178,11 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// Doctor home route
-Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
-    ->middleware(['auth', 'role:Doctor'])
-    ->name('doctorHome');
+Route::middleware(['auth', 'role:Doctor'])->group(function () {
+    // Doctor home route
+    Route::get('/doctorHome', [DoctorHomeController::class, 'index'])
+        ->name('doctorHome');
+});
 
 
 /*
@@ -243,6 +215,23 @@ Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Caregiver Dashboard (Caregiver role only)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:Caregiver'])->group(function () {
+    Route::get('/caregiver', [MedicineCheckController::class, 'dashboard'])
+        ->name('caregiver.dashboard');
+
+    Route::post(
+        '/caregiver/save-today',
+        [MedicineCheckController::class, 'saveMultiple']
+    )->name('caregiver.saveToday');
+});
+
+
+/*
+|--------------------------------------------------------------------------
 | Family Dashboard (Family role only)
 |--------------------------------------------------------------------------
 */
@@ -263,9 +252,10 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'adminIndex'])
         ->name('payments');
 
-    Route::post('/payments/{patient}/pay',
-        [PaymentController::class, 'recordPayment'])
-        ->name('payments.pay');
+    Route::post(
+        '/payments/{patient}/pay',
+        [PaymentController::class, 'recordPayment']
+    )->name('payments.pay');
 
     // Roles management
     Route::get('/roles', [RolesController::class, 'index'])
@@ -288,22 +278,25 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 */
 Route::middleware(['auth', 'role:Admin,Supervisor'])->group(function () {
 
-    // Admin registrations list (you can keep this or drop it; route name is fine)
-    Route::get('/admin/registrations',
-        [RegistrationApprovalController::class, 'index'])
-        ->name('admin.registrations');
+    Route::get(
+        '/admin/registrations',
+        [RegistrationApprovalController::class, 'index']
+    )->name('admin.registrations');
 
-    Route::get('/admin/registration-approval',
-        [RegistrationApprovalController::class, 'index'])
-        ->name('registration.approval');
+    Route::get(
+        '/admin/registration-approval',
+        [RegistrationApprovalController::class, 'index']
+    )->name('registration.approval');
 
-    Route::post('/admin/registration-approval/{id}/approve',
-        [RegistrationApprovalController::class, 'approve'])
-        ->name('registration.approve');
+    Route::post(
+        '/admin/registration-approval/{id}/approve',
+        [RegistrationApprovalController::class, 'approve']
+    )->name('registration.approve');
 
-    Route::post('/admin/registration-approval/{id}/deny',
-        [RegistrationApprovalController::class, 'deny'])
-        ->name('registration.deny');
+    Route::post(
+        '/admin/registration-approval/{id}/deny',
+        [RegistrationApprovalController::class, 'deny']
+    )->name('registration.deny');
 });
 
 
