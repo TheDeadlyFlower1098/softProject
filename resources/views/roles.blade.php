@@ -33,6 +33,7 @@
   .title {
     font-size: 48px;
     margin-bottom: 25px;
+    color: black;
   }
 
   .layout {
@@ -64,6 +65,7 @@
     font-size: 22px;
     text-align: center;
     line-height: 1.4;
+    color: black;
   }
 
   /* Header row for TABLE HEADINGS */
@@ -84,6 +86,7 @@
     align-items: center;
     font-size: 22px;
     font-weight: bold;
+    color: black;
   }
 
   /* Form rows */
@@ -104,6 +107,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    color: black;
   }
 
   .input-box {
@@ -111,6 +115,10 @@
     height: 40px;
     border: 1px solid #6e8642;
     background: #d6e6b7;
+  }
+
+  tbody {
+    color: black;
   }
 </style>
 
@@ -184,15 +192,15 @@
 
       {{-- Manage user roles table --}}
       <div style="margin-top: 40px;">
-        <h2 style="margin-bottom: 15px; font-size: 22px;">Manage User Roles</h2>
+        <h2 style="color: black; margin-bottom: 15px; font-size: 22px;">Manage User Roles</h2>
 
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <thead>
             <tr style="background: #c9d8ec;">
-              <th style="border: 1px solid #6f7fa2; padding: 6px;">Name</th>
-              <th style="border: 1px solid #6f7fa2; padding: 6px;">Current Role</th>
-              <th style="border: 1px solid #6f7fa2; padding: 6px;">Change To</th>
-              <th style="border: 1px solid #6f7fa2; padding: 6px;">Action</th>
+              <th style="color: black; border: 1px solid #6f7fa2; padding: 6px;">Name</th>
+              <th style="color: black; border: 1px solid #6f7fa2; padding: 6px;">Current Role</th>
+              <th style="color: black; border: 1px solid #6f7fa2; padding: 6px;">Change To</th>
+              <th style="color: black; border: 1px solid #6f7fa2; padding: 6px;">Action</th>
             </tr>
           </thead>
           <tbody>
