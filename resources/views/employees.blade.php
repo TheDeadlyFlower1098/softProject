@@ -246,6 +246,9 @@
 </div>
 
 <script>
+const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
 // Escape text for safety (unchanged)
 function escapeHtml(text){
   if (text === null || text === undefined) return '';
@@ -321,7 +324,7 @@ document.getElementById("filterBtn").onclick = function(){
   if(filterMinSalary.value) q.append("min_salary", filterMinSalary.value);
   if(filterMaxSalary.value) q.append("max_salary", filterMaxSalary.value);
 
-  fetch(`/api/employees/filter?${q.toString()}`)
+  fetch(`/employees/filter?${q.toString()}`)
     .then(r=>r.json())
     .then(data => {
       if(!Array.isArray(data)){
@@ -346,23 +349,52 @@ document.getElementById("resetBtn").onclick = () => {
 // INLINE SALARY UPDATE
 @if($isAdmin)
 function editSalary(id, currentSalary){
-    const salary = prompt("Enter new salary:", currentSalary);
-    if(salary === null) return;
+    const raw = prompt("Enter new salary:", currentSalary ?? "");
+    if (raw === null) return; // user hit cancel
 
-    fetch(`/api/employees/${id}`, {
+    const trimmed = raw.trim();
+    if (trimmed === "") {
+        alert("Salary cannot be empty. Enter a number like 45000.");
+        return;
+    }
+
+    const salary = Number(trimmed);
+    if (Number.isNaN(salary)) {
+        alert("Please enter a numeric salary only (e.g. 45000).");
+        return;
+    }
+
+    fetch(`/employees/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": csrfToken
+        },
         body: JSON.stringify({ salary })
     })
-    .then(r => {
-        if(!r.ok) throw new Error();
+
+    .then(async r => {
+        if (!r.ok) {
+            let msg = "Error updating salary.";
+
+            // Try to extract validation errors from Laravel (422)
+            try {
+                const data = await r.json();
+                if (data && data.errors && data.errors.salary) {
+                    msg = data.errors.salary.join("\n");
+                }
+            } catch (e) {}
+
+            throw new Error(msg);
+        }
         return r.json();
     })
     .then(() => {
         alert("Salary updated");
         loadEmployees();
     })
-    .catch(() => alert("Error updating salary"));
+    .catch(err => alert(err.message));
 }
 @else
 function editSalary(){

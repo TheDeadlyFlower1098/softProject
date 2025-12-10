@@ -3,6 +3,11 @@
 @section('title', 'Caregiver Dashboard')
 
 @section('content')
+
+@php
+  $existingChecks = $existingChecks ?? collect();
+@endphp
+
 <style>
   :root {
     --card-bg: rgba(255,255,255,0.05);
@@ -40,6 +45,16 @@
   .caregiver-box p {
     margin: 4px 0;
   }
+
+  .caregiver-row-locked {
+    background: #ccc;
+    opacity: 0.7;
+  }
+
+  .caregiver-row-locked td {
+    color: #555;
+  }
+
 
   .caregiver-table-wrapper {
     background: #d9e9fb;
@@ -140,27 +155,83 @@
 
           <tbody>
             @foreach ($patients as $patient)
-              <tr>
+              @php
+                $check = $existingChecks->get($patient->id);
+                $isLocked = !is_null($check);
+              @endphp
+
+              <tr class="{{ $isLocked ? 'caregiver-row-locked' : '' }}">
                 <td>
                   {{ optional($patient->user)->first_name }}
                   {{ optional($patient->user)->last_name }}
-                  <input type="hidden"
-                         name="patients[{{ $patient->id }}][patient_id]"
-                         value="{{ $patient->id }}">
+
+                  @if($isLocked)
+                    <br>
+                    <small><em>Report already submitted for this patient today.</em></small>
+                  @else
+                    <input type="hidden"
+                          name="patients[{{ $patient->id }}][patient_id]"
+                          value="{{ $patient->id }}">
+                  @endif
                 </td>
 
-                {{-- Medicine --}}
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][morning]"   value="1"></td>
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][afternoon]" value="1"></td>
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][night]"     value="1"></td>
+                {{-- Morning --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->morning === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][morning]" value="1">
+                  @endif
+                </td>
 
-                {{-- Meals --}}
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][breakfast]" value="1"></td>
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][lunch]"     value="1"></td>
-                <td><input type="checkbox" name="patients[{{ $patient->id }}][dinner]"    value="1"></td>
+                {{-- Afternoon --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->afternoon === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][afternoon]" value="1">
+                  @endif
+                </td>
+
+                {{-- Night --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->night === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][night]" value="1">
+                  @endif
+                </td>
+
+                {{-- Breakfast --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->breakfast === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][breakfast]" value="1">
+                  @endif
+                </td>
+
+                {{-- Lunch --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->lunch === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][lunch]" value="1">
+                  @endif
+                </td>
+
+                {{-- Dinner --}}
+                <td>
+                  @if($isLocked)
+                    {{ $check->dinner === 'taken' ? '✔' : '✖' }}
+                  @else
+                    <input type="checkbox" name="patients[{{ $patient->id }}][dinner]" value="1">
+                  @endif
+                </td>
               </tr>
             @endforeach
           </tbody>
+
         </table>
       </div>
 
