@@ -16,11 +16,12 @@
     --green-200:#b9d7a9;
   }
 
-  *{box-sizing:border-box}
+  *{box-sizing:border-box;}
 
   /* Outer frame */
   .layout{
-    width:1100px; max-width:96vw;
+    width:1100px;
+    max-width:96vw;
     margin:16px auto;
     background:var(--blue-100);
     border:3px solid #c7d3e2;
@@ -76,73 +77,52 @@
     border:3px solid #739966;
     border-radius:6px;
     padding:16px;
-    min-height:560px;
+    min-height:200px;
     display:flex;
     flex-direction:column;
     gap:16px;
   }
 
-  .bar, .canvas{
-    background:#cfe1f6;
-    border:3px solid #7f93ac;
-    border-radius:4px;
-  }
-
-  .bar{
-    height:70px;
-  }
-
+  /* Table container – same style idea as Patients table wrapper */
   .canvas{
-    flex: 1;
-    padding: 20px;
-    overflow-x: auto;
-
-    /* make the table sit nicely in the middle */
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    background:var(--blue-100);
+    border:3px solid #7f93ac;
+    border-radius:6px;
+    padding:10px;
+    overflow-x:auto;
   }
 
-  .roster-table{
-    width: 100%;
-    max-width: 100%;
-    border-collapse: collapse;
-    font-size: 16px;
-    background: #e3edf9;        
-    border-radius: 8px;
-    overflow: hidden;        
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  /* Roster table styled to match Patients table */
+  table.roster-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:15px;
+    background:#ffffff;
   }
 
-  .roster-table thead th{
-    background: #5a7fb6; 
-    color: #ffffff;       
-    text-align: left;
-    padding: 12px 14px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+  table.roster-table thead th{
+    background:#cfe1f6;
+    border-bottom:2px solid #7f93ac;
+    padding:10px;
+    text-align:left;
+    font-weight:600;
+    white-space:nowrap;
+    color:#000;
   }
 
-  .roster-table tbody td{
-    padding: 12px 14px;
-    border-top: 1px solid #b4c5dd;
-    color: #1e2b3c;    
+  table.roster-table tbody td{
+    border-bottom:1px solid #d0d7e2;
+    padding:8px 10px;
+    vertical-align:middle;
+    color:#000;
   }
 
-  .roster-table tbody tr:nth-child(odd){
-    background: #f3f7ff;  
+  table.roster-table tbody tr:nth-child(even){
+    background:#f5f7fb;
   }
 
-  .roster-table tbody tr:nth-child(even){
-    background: #dde7f7;
-  }
-
-  .roster-table tbody tr:hover{
-    background: #c7d7f3;   
-  }
-
-  .roster-table td:first-child{
-    font-weight: 600;
+  table.roster-table tbody tr:nth-child(odd){
+    background:#ffffff;
   }
 
   .new-roster-btn{
@@ -161,36 +141,10 @@
 
   .new-roster-btn:hover{
     filter:brightness(1.05);
-  }
-
-  /* make room for button in date row */
-    .date-row{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    margin:2px 0 10px 6px;
   }
 
   .date-row-spacer{
     flex:1;
-  }
-
-  .new-roster-btn{
-    display:inline-block;
-    padding:6px 16px;
-    margin-left:auto;
-    border:2px solid #3d6b2a;
-    border-radius:4px;
-    background:#6aa84f;
-    font-weight:600;
-    font-size:14px;
-    text-decoration:none;
-    color:#000;
-    cursor:pointer;
-  }
-
-  .new-roster-btn:hover{
-    filter:brightness(1.05);
   }
 
   /* Right rail */
@@ -214,42 +168,40 @@
   }
 </style>
 
-  <div class="layout">
-    <div class="left">
+<div class="layout">
+  <div class="left">
 
-      <h1 class="title">Roster</h1>
+    <h1 class="title">Roster</h1>
 
-      <form method="GET"
-        action="{{ route('roster.dashboard') }}"
-        class="date-row">
-    <span class="date-label">Date:</span>
+    <form method="GET"
+          action="{{ route('roster.dashboard') }}"
+          class="date-row">
+      <span class="date-label">Date:</span>
 
-    <input
-      class="date-input"
-      type="date"
-      name="date"
-      value="{{ $selectedDate }}"
-      onchange="this.form.submit()"
-    >
-
-    <div class="date-row-spacer"></div>
-
-    {{-- Show "New Roster" button only for Admin & Supervisor --}}
-    @if(in_array($role, ['admin', 'supervisor']))
-      <a
-        href="{{ route('roster.new', ['date' => $selectedDate]) }}"
-        class="new-roster-btn"
+      <input
+        class="date-input"
+        type="date"
+        name="date"
+        value="{{ $selectedDate }}"
+        onchange="this.form.submit()"
       >
-        New Roster
-      </a>
-    @endif
-  </form>
 
+      <div class="date-row-spacer"></div>
+
+      {{-- Show "New Roster" button only for Admin & Supervisor --}}
+      @if(in_array($role, ['admin', 'supervisor']))
+        <a
+          href="{{ route('roster.new', ['date' => $selectedDate]) }}"
+          class="new-roster-btn"
+        >
+          New Roster
+        </a>
+      @endif
+    </form>
 
     {{-- Roster table --}}
-
     <section class="card">
-      <div class="bar"></div>
+      {{-- 🔥 removed the empty <div class="bar"></div> --}}
       <div class="canvas">
         <table class="roster-table">
           <thead>
@@ -302,39 +254,39 @@
   </div>
 
   <aside class="rail">
-  @if(!$roster)
-    <p>
-      No roster has been created for
-      {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
-    </p>
-  @else
-    @if($currentEmployee)
-      @if($currentAssignment)
-        <p>
-          Hello {{ $currentEmployee->name }}!<br><br>
-          You are scheduled as
-          <strong>{{ $currentAssignment['type'] }}</strong>
-          @if($currentAssignment['group'])
-            in <strong>{{ $currentAssignment['group'] }}</strong>
-          @endif
-          on {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
-        </p>
+    @if(!$roster)
+      <p>
+        No roster has been created for
+        {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
+      </p>
+    @else
+      @if($currentEmployee)
+        @if($currentAssignment)
+          <p>
+            Hello {{ $currentEmployee->name }}!<br><br>
+            You are scheduled as
+            <strong>{{ $currentAssignment['type'] }}</strong>
+            @if($currentAssignment['group'])
+              in <strong>{{ $currentAssignment['group'] }}</strong>
+            @endif
+            on {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
+          </p>
+        @else
+          <p>
+            Hello {{ $currentEmployee->name }}!<br><br>
+            You are <strong>not scheduled</strong> on
+            {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
+          </p>
+        @endif
       @else
         <p>
-          Hello {{ $currentEmployee->name }}!<br><br>
-          You are <strong>not scheduled</strong> on
+          You don't have an employee record linked yet, so we can't
+          determine your schedule for
           {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
         </p>
       @endif
-    @else
-      <p>
-        You don't have an employee record linked yet, so we can't
-        determine your schedule for
-        {{ \Illuminate\Support\Carbon::parse($selectedDate)->format('M d, Y') }}.
-      </p>
     @endif
-  @endif
-</aside>
+  </aside>
 
 </div>
 

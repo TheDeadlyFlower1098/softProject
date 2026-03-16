@@ -76,67 +76,42 @@ class MedicineCheckController extends Controller
      */
     public function saveSingle(Request $request)
     {
-        $user = auth()->user();
+        $user    = auth()->user();
         $patient = $user->patient;   // assumes User has ->patient relation
 
         if (! $patient) {
             abort(403, 'No patient record linked to this user.');
         }
 
-<<<<<<< HEAD
-        // We don’t really need patient_id / date from the form, we derive them:
-        // if you still send them, you can keep a simple validate, but it's optional.
-        // $request->validate([...]) could be removed or simplified.
+        $today = today()->toDateString();
 
-        // Map each checkbox -> 'taken' or 'missed'
+        // Map each checkbox -> 'taken' or 'missed' (or adjust to booleans if your DB uses tinyints)
         $slots = ['morning', 'afternoon', 'night', 'breakfast', 'lunch', 'dinner'];
 
         $values = [];
         foreach ($slots as $slot) {
-            // if checkbox is present => taken, else missed (or null if you prefer "unknown")
             $values[$slot] = $request->has($slot) ? 'taken' : 'missed';
+            // or: $values[$slot] = $request->boolean($slot);
         }
-
-        $check = MedicineCheck::updateOrCreate(
-            [
-                'patient_id' => $patient->id,
-                'date'       => today(),
-            ],
-            array_merge(
-                [
-                    // if you have an Employee relation, use employee id, otherwise user id is fine
-                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
-                ],
-                $values
-            )
-        );
-=======
-        $request->validate([
-            'morning'   => 'nullable|boolean',
-            'afternoon' => 'nullable|boolean',
-            'night'     => 'nullable|boolean',
-        ]);
-
-        $today = now()->toDateString();
->>>>>>> 1600992e192a5aa170e768c25b53ba78f0e23e67
 
         MedicineCheck::updateOrCreate(
             [
                 'patient_id' => $patient->id,
                 'date'       => $today,
             ],
-            [
-                'caregiver_id' => $user->id,
-                'morning'      => $request->boolean('morning'),
-                'afternoon'    => $request->boolean('afternoon'),
-                'night'        => $request->boolean('night'),
-            ]
+            array_merge(
+                [
+                    'caregiver_id' => optional($user->employee)->id ?? $user->id,
+                ],
+                $values
+            )
         );
 
         return redirect()
             ->route('patient.dashboard')
             ->with('success', 'Medicine checklist saved.');
     }
+
 
     /* ----------------------------------------------------------------------
      |  CAREGIVER DASHBOARD  (list of many patients)
@@ -158,22 +133,19 @@ class MedicineCheckController extends Controller
             abort(403);
         }
 
-        // Which date are we looking at? (default: today)
         $selectedDate = $request->query('date', now()->toDateString());
 
         $patients      = collect();
         $assignedGroup = null;
         $roster        = null;
+        $existingChecks = collect();
 
-        // Find the employee row linked to this caregiver
         $employee = Employee::where('user_id', $user->id)->first();
 
         if ($employee) {
-            // Get roster for that date
             $roster = Roster::whereDate('date', $selectedDate)->first();
 
             if ($roster) {
-                // Work out which caregiver slot they occupy → which group
                 if ($roster->caregiver_1 == $employee->id) {
                     $assignedGroup = 1;
                 } elseif ($roster->caregiver_2 == $employee->id) {
@@ -184,7 +156,6 @@ class MedicineCheckController extends Controller
                     $assignedGroup = 4;
                 }
 
-                // If assigned to a group, load only those patients
                 if (! is_null($assignedGroup)) {
                     $patients = Patient::with('user')
                         ->where('group_id', $assignedGroup)
@@ -193,14 +164,23 @@ class MedicineCheckController extends Controller
             }
         }
 
-        // view: resources/views/caregiver.blade.php
+        // 🔹 Get any existing medicine checks for these patients on this date
+        if ($patients->isNotEmpty()) {
+            $existingChecks = MedicineCheck::forDate($selectedDate)
+                ->whereIn('patient_id', $patients->pluck('id'))
+                ->get()
+                ->keyBy('patient_id');   // key by patient_id for quick lookup
+        }
+
         return view('caregiver', [
-            'patients'      => $patients,
-            'selectedDate'  => $selectedDate,
-            'roster'        => $roster,
-            'assignedGroup' => $assignedGroup,
+            'patients'       => $patients,
+            'selectedDate'   => $selectedDate,
+            'roster'         => $roster,
+            'assignedGroup'  => $assignedGroup,
+            'existingChecks' => $existingChecks,
         ]);
     }
+
 
     /**
      * Caregiver presses OK on patient list.
@@ -209,13 +189,18 @@ class MedicineCheckController extends Controller
      */
     public function saveMultiple(Request $request)
     {
-        $user       = auth()->user();          // caregiver user
-        $caregiverId = $user->id;
+        $user = auth()->user();
 
-        // Big array from form: patients[<id>][field]...
+        // Only caregivers
+        if (! $user || optional($user->role)->name !== 'Caregiver') {
+            abort(403);
+        }
+
+        $employee     = Employee::where('user_id', $user->id)->first();
+        $caregiverId  = optional($employee)->id ?? $user->id;
+
         $rows = $request->input('patients', []);
 
-        // If somehow nothing was sent, just return
         if (!is_array($rows) || empty($rows)) {
             return redirect()
                 ->route('caregiver.dashboard')
@@ -223,6 +208,7 @@ class MedicineCheckController extends Controller
         }
 
         $today = now()->toDateString();
+        $slots = ['morning', 'afternoon', 'night', 'breakfast', 'lunch', 'dinner'];
 
         foreach ($rows as $row) {
             if (empty($row['patient_id'])) {
@@ -231,36 +217,45 @@ class MedicineCheckController extends Controller
 
             $patientId = $row['patient_id'];
 
-            // Only hit DB if at least one checkbox for this patient is present
-            $hasAny =
-                !empty($row['morning']) ||
-                !empty($row['afternoon']) ||
-                !empty($row['night']) ||
-                !empty($row['breakfast'] ?? null) ||
-                !empty($row['lunch'] ?? null) ||
-                !empty($row['dinner'] ?? null);
+            // 🔒 Skip if a record already exists for this patient & date
+            $alreadyExists = MedicineCheck::forDate($today)
+                ->forPatient($patientId)
+                ->exists();
 
-            if (! $hasAny) {
-                // Skip patients where caregiver didn’t tick anything
+            if ($alreadyExists) {
                 continue;
             }
 
-            MedicineCheck::updateOrCreate(
-                [
-                    'patient_id' => $patientId,
-                    'date'       => $today,
-                ],
-                [
-                    'caregiver_id' => $caregiverId,
-                    // checkboxes: present => true, missing => false
-                    'morning'   => !empty($row['morning']),
-                    'afternoon' => !empty($row['afternoon']),
-                    'night'     => !empty($row['night']),
-                    
-                    'breakfast' => !empty($row['breakfast'] ?? null),
-                    'lunch'     => !empty($row['lunch'] ?? null),
-                    'dinner'    => !empty($row['dinner'] ?? null),
-                ]
+            // Did the caregiver tick at least one box?
+            $hasAny =
+                !empty($row['morning'] ?? null)   ||
+                !empty($row['afternoon'] ?? null) ||
+                !empty($row['night'] ?? null)     ||
+                !empty($row['breakfast'] ?? null) ||
+                !empty($row['lunch'] ?? null)     ||
+                !empty($row['dinner'] ?? null);
+
+            if (! $hasAny) {
+                continue;
+            }
+
+            // Map to 'taken' / 'missed' to stay consistent with your model
+            $values = [];
+            foreach ($slots as $slot) {
+                $values[$slot] = !empty($row[$slot] ?? null)
+                    ? 'taken'
+                    : 'missed';
+            }
+
+            MedicineCheck::create(
+                array_merge(
+                    [
+                        'patient_id'   => $patientId,
+                        'date'         => $today,
+                        'caregiver_id' => $caregiverId,
+                    ],
+                    $values
+                )
             );
         }
 
@@ -268,5 +263,6 @@ class MedicineCheckController extends Controller
             ->route('caregiver.dashboard')
             ->with('success', 'Daily report saved.');
     }
+
 
 }

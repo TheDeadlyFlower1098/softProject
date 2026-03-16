@@ -44,13 +44,14 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name'   => 'sometimes|string',
             'role'   => 'sometimes|string',
-            'salary' => 'sometimes|numeric'
+            'salary' => 'nullable|numeric',  // <-- changed
         ]);
 
         $emp->update($data);
 
         return response()->json($emp);
     }
+
 
     public function destroy($id)
     {
